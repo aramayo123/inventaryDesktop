@@ -1,0 +1,39 @@
+
+new laravel proyect-name
+
+use Illuminate\Support\Facades\Schema;
+Schema::defaultStringLength(191);
+
+0 / none
+biuld and compile ? npm run dev y eso, poner yes
+base de datos sqlite
+luego hacer el cd hasta la carpeta
+por ultimpo composer run dev
+
+luego con visual abierto en la carpeta ponemos composer require laravel/ui
+luego php artisan ui bootstrap
+luego npm install
+luego php artisan ui:auth, le damos que si
+luego composer run dev
+
+PARA LA APP DE DESKTOP
+
+composer require nativephp/electron
+
+luego
+
+php artisan native:install
+
+y para correrlo
+
+php artisan native:serve
+
+
+para abrir ambas aplicaciones al mismo tiempo en desktop correr en una consola
+php artisan native:serve
+y en otra composer run dev
+
+
+
+
+php artisan native:migrate para migraciones de la db en nativephp
