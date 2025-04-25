@@ -42,10 +42,10 @@ class ProductController extends Controller
         if ($product) {
             $product->stock += $request->stock;
             $product->save();
-            return redirect()->route('home')->with('success_product', 'Stock actualizado');
+            return redirect()->route('home')->with('success_product', 'UPDATE__Stock actualizado');
         } else {
             Product::create($request->all());
-            return redirect()->route('home')->with('success_product', 'Producto creado');
+            return redirect()->route('home')->with('success_product', 'CREATED__Producto creado');
         }
     }
 
@@ -81,7 +81,7 @@ class ProductController extends Controller
         $producto->precio_compra = $request->precio_compra;
         $producto->precio_venta = $request->precio_venta;
         $producto->save();
-        return redirect()->route('home')->with('success_product', 'Producto actualizado');
+        return redirect()->route('home')->with('success_product', 'UPDATE__Producto actualizado');
     }
 
     /**
@@ -91,6 +91,33 @@ class ProductController extends Controller
     {
         //
         Product::destroy($id);
-        return redirect()->route('home')->with('success_product',  "El producto ha sido eliminado con exito!");
+        return redirect()->route('home')->with('success_product',  "DESTROY__El producto ha sido eliminado con exito!");
+    }
+    public function actualizarCampo(Request $request, $id)
+    {
+
+        $producto = Product::findOrFail($id);
+
+        // Validar y actualizar el campo
+        $campo = $request->input('campo');
+        $valor = $request->input('valor');
+
+        // Aquí puedes hacer la lógica específica de actualización
+        $producto->{$campo} = $valor;
+        $producto->save();
+
+        return response()->json(['success' => true]);
+    }
+    public function BuscarProductos(Request $request)
+    {
+        $search = $request->search;
+
+        $productos = Product::when($search, function ($q) use ($search) {
+            $q->where('nombre', 'like', "%{$search}%")
+            ->orWhere('codigo', 'like', "%{$search}%");
+        })
+        ->orderBy('nombre')
+        ->get();
+        return response()->json($productos);
     }
 }

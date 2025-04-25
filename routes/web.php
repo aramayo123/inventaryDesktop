@@ -11,4 +11,6 @@ Auth::routes([
 
 Route::get('/', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+Route::get('/productos/buscar', [ProductController::class, 'BuscarProductos']);
+Route::post('/productos/{id}/actualizar-campo', [ProductController::class, 'actualizarCampo']);
 Route::resource('productos', ProductController::class);

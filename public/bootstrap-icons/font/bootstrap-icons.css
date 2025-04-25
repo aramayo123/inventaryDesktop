@@ -1,0 +1,21 @@
+
+@font-face {
+  font-family: "bootstrap-icons";
+  src: url("bootstrap-icons.woff2") format("woff2"),
+       url("bootstrap-icons.woff") format("woff");
+  font-weight: normal;
+  font-style: normal;
+}
+.bi {
+  display: inline-block;
+  font-family: "bootstrap-icons";
+  font-style: normal;
+  font-weight: normal;
+  font-size: 1rem;
+  line-height: 1;
+  vertical-align: -0.125em;
+}
+/* Solo un ejemplo: */
+.bi-pencil::before {
+  content: "\f4dd";
+}
