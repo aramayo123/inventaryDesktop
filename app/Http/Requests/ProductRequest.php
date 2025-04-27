@@ -30,15 +30,28 @@ class ProductRequest extends FormRequest
                 Rule::unique('products', 'codigo')->ignore($this->route('producto')),
             ],
             'nombre' => 'required|string',
-            'precio_venta' => 'required|numeric|min:0',
-            'stock' => 'required|integer|min:0',
+            'cantidad_unidades' => 'integer|min:0',
+            'cantidad_bultos' => 'integer|min:0',
+            'bultos_min_aviso' => 'integer|min:0',
+            'cantidad_por_bulto' => 'required|integer|min:0',
+            'precio_compra_unitario' => 'required|integer|min:0',
+            'precio_compra_bulto' => 'required|integer|min:0',
+            'precio_venta_unitario' => 'required|integer|min:0',
         ];
     }
     public function attributes()
     {
         return [
             'precio_venta' => 'precio de venta',
+            'precio_compra' => 'precio de compra',
             'nombre' => 'nombre del producto',
+            'cantidad_unidades' => 'cantidad de unidades',
+            'cantidad_bultos' => 'cantidad de bultos',
+            'bultos_min_aviso' => 'bultos min para aviso',
+            'cantidad_por_bulto' => 'cantidad por bulto',
+            'precio_compra_unitario' => 'precio de compra unitario',
+            'precio_compra_bulto' => 'precio de compra por bulto',
+            'precio_venta_unitario' => 'precio de venta unitario',
         ];
     }
     public function messages()
@@ -49,12 +62,9 @@ class ProductRequest extends FormRequest
             'codigo.unique' => 'El codigo ingresado ya existe y pertenece a otro producto.',
             'nombre.required' => 'El nombre del producto es obligatorio.',
             'nombre.string' => 'El nombre del producto no debe contener numeros o caracteres especiales.',
-            'precio_venta.required' => 'El precio de venta es obligatorio.',
-            'precio_venta.numeric' => 'El precio de venta debe ser un numero.',
-            'precio_venta.min' => 'El precio de venta debe ser mayor que 0.',
-            'stock.required' => 'El stock del producto es obligatorio.',
-            'stock.integer' => 'El stock del producto debe ser un numero mayor o igual que 0.',
-            'stock.min' => 'El stock del producto debe ser un numero mayor o igual que 0.',
+            'precio_venta_unitario.required' => 'El precio unitario de venta es obligatorio.',
+            'precio_venta_unitario.numeric' => 'El precio unitario de venta debe ser un numero.',
+            'precio_venta_unitario.min' => 'El precio unitario de venta debe ser mayor que 0.',
         ];
     }
 }

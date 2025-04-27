@@ -4,6 +4,8 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
+// agregar campo MARCA
+
 return new class extends Migration
 {
     /**
@@ -15,11 +17,13 @@ return new class extends Migration
             $table->id();
             $table->string('codigo')->unique();
             $table->string('nombre');
-            $table->text('descripcion')->nullable();
-            $table->integer('stock')->default(0);
-            $table->integer('stock_minimo')->default(5);
-            $table->decimal('precio_compra', 10, 2)->default(0);
-            $table->decimal('precio_venta', 10, 2);
+            $table->integer('cantidad_unidades')->default(0);
+            $table->integer('cantidad_bultos')->default(0);
+            $table->integer('bultos_min_aviso')->default(0);
+            $table->integer('cantidad_por_bulto')->default(0);
+            $table->decimal('precio_compra_unitario', 10, 2)->default(0);
+            $table->decimal('precio_compra_bulto', 10, 2)->default(0);
+            $table->decimal('precio_venta_unitario', 10, 2)->default(0);
             $table->timestamps();
         });
     }

@@ -1,24 +1,24 @@
 <?php
-    function separarClaveMensaje(string $texto, string $separador = '__'): array
-    {
-        $partes = explode($separador, $texto, 2);
+function separarClaveMensaje(string $texto, string $separador = '__'): array
+{
+    $partes = explode($separador, $texto, 2);
 
-        return [
-            'key' => $partes[0] ?? '',
-            'mensaje' => $partes[1] ?? '',
-        ];
-    }
-    if(session('success_product')){
-        $respuesta = separarClaveMensaje(session('success_product'));
-        $color = $respuesta['key'] == "CREATED" ? "success" : ($respuesta['key'] == "DESTROY" ? "warning":"info");
-        $message = $respuesta['mensaje'];
-    }
+    return [
+        'key' => $partes[0] ?? '',
+        'mensaje' => $partes[1] ?? '',
+    ];
+}
+if (session('success_product')) {
+    $respuesta = separarClaveMensaje(session('success_product'));
+    $color = $respuesta['key'] == 'CREATED' ? 'success' : ($respuesta['key'] == 'DESTROY' ? 'warning' : 'info');
+    $message = $respuesta['mensaje'];
+}
 ?>
 
 <div class="container">
     @if (session('success_product'))
         <div class="alert alert-{{ $color }} alert-dismissible fade show" role="alert">
-            <strong> {{ $message }}</strong> 
+            <strong> {{ $message }}</strong>
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     @endif
@@ -38,9 +38,6 @@
                     <th>Nombre</th>
                     <th>Codigo</th>
                     <th>Stock</th>
-                    <th>Stock Min.</th>
-                    <th>P / C.</th>
-                    <th>P / V.</th>
                     <th>Acciones</th>
                 </tr>
             </thead>
@@ -83,59 +80,8 @@
                         </td>
                         <td class="campo" data-field="stock" data-id="{{ $producto->id }}">
                             <div class="d-flex justify-content-between align-items-center">
-                                <span>{{ $producto->stock }}</span>
-                                <span onclick="editarCampo('stock', {{ $producto->id }})"
-                                    style="display: inline-flex; align-items: center; justify-content: center; padding: 4px; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; transition: background-color 0.2s;"
-                                    onmouseover="this.style.backgroundColor='#f0f0f0'"
-                                    onmouseout="this.style.backgroundColor='transparent'">
-                                    <svg width="15" height="15" fill="currentColor" class="bi bi-pencil-square"
-                                        viewBox="0 0 16 16">
-                                        <path
-                                            d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z" />
-                                        <path fill-rule="evenodd"
-                                            d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z" />
-                                    </svg>
-                                </span>
-                            </div>
-                        </td>
-                        <td class="campo" data-field="stock_minimo" data-id="{{ $producto->id }}">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <span>{{ $producto->stock_minimo }}</span>
-                                <span onclick="editarCampo('stock_minimo', {{ $producto->id }})"
-                                    style="display: inline-flex; align-items: center; justify-content: center; padding: 4px; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; transition: background-color 0.2s;"
-                                    onmouseover="this.style.backgroundColor='#f0f0f0'"
-                                    onmouseout="this.style.backgroundColor='transparent'">
-                                    <svg width="15" height="15" fill="currentColor" class="bi bi-pencil-square"
-                                        viewBox="0 0 16 16">
-                                        <path
-                                            d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z" />
-                                        <path fill-rule="evenodd"
-                                            d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z" />
-                                    </svg>
-                                </span>
-                            </div>
-                        </td>
-                        <td class="campo" data-field="precio_compra" data-id="{{ $producto->id }}">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <span>${{ number_format($producto->precio_compra, 2) }}</span>
-                                <span onclick="editarCampo('precio_compra', {{ $producto->id }})"
-                                    style="display: inline-flex; align-items: center; justify-content: center; padding: 4px; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; transition: background-color 0.2s;"
-                                    onmouseover="this.style.backgroundColor='#f0f0f0'"
-                                    onmouseout="this.style.backgroundColor='transparent'">
-                                    <svg width="15" height="15" fill="currentColor" class="bi bi-pencil-square"
-                                        viewBox="0 0 16 16">
-                                        <path
-                                            d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z" />
-                                        <path fill-rule="evenodd"
-                                            d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z" />
-                                    </svg>
-                                </span>
-                            </div>
-                        </td>
-                        <td class="campo" data-field="precio_venta" data-id="{{ $producto->id }}">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <span>${{ number_format($producto->precio_venta, 2) }}</span>
-                                <span onclick="editarCampo('precio_venta', {{ $producto->id }})"
+                                <span>Stock</span>
+                                <span onclick="editarCampo('stock', {{ $producto->id }}, @json($producto))"
                                     style="display: inline-flex; align-items: center; justify-content: center; padding: 4px; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; transition: background-color 0.2s;"
                                     onmouseover="this.style.backgroundColor='#f0f0f0'"
                                     onmouseout="this.style.backgroundColor='transparent'">
@@ -150,10 +96,6 @@
                             </div>
                         </td>
                         <td>
-                            <!--
-                            <a href="{{ route('productos.edit', $producto->id) }}"
-                                class="btn btn-sm btn-warning">Editar</a>
-                            !-->
                             <form action="{{ route('productos.destroy', $producto->id) }}" method="POST"
                                 class="d-inline">
                                 @csrf
@@ -170,7 +112,7 @@
 </div>
 
 <div id="paginacion" class="d-flex justify-content-center mt-4">
-    asdasd
+
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <!-- Modal para editar un campo -->
@@ -182,7 +124,7 @@
                 <h5 class="modal-title" id="modal-editar-campoLabel">Editar Campo</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
+            <div class="modal-body" id="modal_body">
                 <form id="form-editar-campo">
                     <div class="mb-3">
                         <label for="campo-editar" class="form-label" id="modal-editar-labeltext">Nuevo valor</label>
@@ -201,43 +143,99 @@
 <script>
     let productosFullList = [];
     let currentPage = 1;
-    const perPage = 10; // <--- ¡esto es lo que te está faltando!
-    function separarPorGuionBajo(texto) {
-        if (texto !== 'precio_compra' && texto !== 'precio_venta' && texto !== 'stock_minimo')
-            return texto + " del producto";
-
-        return texto.replace(/_/g, ' de ');
-    }
-
-    function editarCampo(campo, id) {
+    const perPage = 8; // 
+    function editarCampo(campo, id, producto = null) {
         const Title = document.querySelector('#modal-editar-campoLabel');
-        const text = document.querySelector('#modal-editar-labeltext');
+        const ModalBody = document.querySelector('#modal_body');
+        ModalBody.innerHTML = '';
+       
+        if (campo === 'stock') {
+            Title.innerHTML = '¿En qué presentación viene el producto?';
+            ModalBody.innerHTML += `
+                <form id="form-editar-campo">
+                    <div class="row mb-3">
+                        <div class="col">
+                            <label class="form-label" for="cantidad_unidades">Cantidad de unidades: </label>
+                            <input type="number" class="form-control" name="cantidad_unidades" id="cantidad_unidades" value="${producto.cantidad_unidades}">
+                        </div>
+                        <div class="col">
+                            <label class="form-label" for="cantidad_bultos">Cantidad de bultos: </label>
+                            <input type="number" class="form-control" name="cantidad_bultos" id="cantidad_bultos" value="${producto.cantidad_bultos}">
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col">
+                            <label class="form-label" for="bultos_min_aviso">Bultos min para aviso: </label>
+                            <input type="number" class="form-control" name="bultos_min_aviso" id="bultos_min_aviso" value="${producto.bultos_min_aviso}">
+                        </div>
+                        <div class="col">
+                            <label class="form-label" for="cantidad_por_bulto">Cantidad por bulto: </label>
+                            <input type="number" class="form-control" name="cantidad_por_bulto" id="cantidad_por_bulto" value="${producto.cantidad_por_bulto}">
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col">
+                            <label class="form-label" for="precio_compra_unitario">Precio de compra por unidad: </label>
+                            <input type="number" step="0.10" class="form-control" name="precio_compra_unitario" id="precio_compra_unitario" value="${producto.precio_compra_unitario}">
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col">
+                            <label class="form-label" for="precio_compra_bulto">Precio de compra por bulto: </label>
+                            <input type="number" step="0.10" class="form-control" name="precio_compra_bulto" id="precio_compra_bulto" value="${producto.precio_compra_bulto}">
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                         <div class="col">
+                            <label class="form-label" for="precio_venta_unitario">Precio de venta: </label>
+                            <input type="number" step="0.10" class="form-control" name="precio_venta_unitario" id="precio_venta_unitario" value="${producto.precio_venta_unitario}">
+                        </div>
+                    </div>
+                </form>
+            `;
+            // Mostrar el modal
+            const modal = new bootstrap.Modal(document.getElementById('modal-editar-campo'));
+            modal.show();
+            // Guardar el campo y su ID para realizar la actualización
+            document.getElementById('form-editar-campo').onsubmit = function(e) {
+                e.preventDefault();
+                const datos = {
+                    cantidad_unidades: document.getElementById('cantidad_unidades') ? document.getElementById('cantidad_unidades').value : null,
+                    cantidad_bultos: document.getElementById('cantidad_bultos') ? document.getElementById('cantidad_bultos').value : null,
+                    bultos_min_aviso: document.getElementById('bultos_min_aviso') ? document.getElementById('bultos_min_aviso').value : null,
+                    cantidad_por_bulto: document.getElementById('cantidad_por_bulto') ? document.getElementById('cantidad_por_bulto').value : null,
+                    precio_compra_unitario: document.getElementById('precio_compra_unitario') ? document.getElementById('precio_compra_unitario').value : null,
+                    precio_compra_bulto: document.getElementById('precio_compra_bulto') ? document.getElementById('precio_compra_bulto').value : null,
+                    precio_venta_unitario: document.getElementById('precio_venta_unitario') ? document.getElementById('precio_venta_unitario').value : null,
+                };
+                //console.log(datos);
+                guardarCampoSpecial(datos, id);
+            };
+            return;
+        }
+        ModalBody.innerHTML = `
+            <form id="form-editar-campo">
+                <div class="mb-3">
+                    <label for="campo-editar" class="form-label" id="modal-editar-labeltext">Nuevo valor</label>
+                    <input type="text" class="form-control" id="campo-editar" required>
+                </div>
+            </form>`;
+
         // Obtener el valor actual del campo
         const valorActual = document.querySelector(`#producto-${id} td[data-field="${campo}"]`).innerText.trim();
 
+        const text = document.querySelector('#modal-editar-labeltext');
         // Asignar el valor actual al input del modal
         const inputCampoEditar = document.getElementById('campo-editar');
-
         // Establecer el tipo de input según el campo
-        if (campo === 'precio_venta' || campo === 'precio_compra') {
-            inputCampoEditar.type = 'number'; // Campo numérico para precios
-            inputCampoEditar.step = '0.01'; // Permitir decimales
-            inputCampoEditar.placeholder = 'Ingrese un valor numérico';
-        } else if (campo === 'fecha') {
-            inputCampoEditar.type = 'date'; // Campo de fecha
-            inputCampoEditar.placeholder = 'Seleccione una fecha';
-        } else if (campo === 'descripcion') {
-            inputCampoEditar.type = 'text'; // Campo de texto (por defecto)
-            inputCampoEditar.placeholder = 'Ingrese una descripción';
-        } else {
-            inputCampoEditar.type = 'text'; // Campo de texto por defecto
-            inputCampoEditar.placeholder = 'Ingrese un valor';
-        }
-        Title.innerHTML = 'Editar ' + separarPorGuionBajo(campo);
-        text.innerHTML = 'Ingrese el nuevo valor para ' + separarPorGuionBajo(campo);
-        // Establecer el valor del input en base al valor actual
+        inputCampoEditar.type = 'text'; // Campo de texto por defecto
+        inputCampoEditar.placeholder = 'Ingrese un valor';
         inputCampoEditar.value = valorActual;
-
+        Title.innerHTML = 'Editar ' + (campo);
+        text.innerHTML = 'Ingrese el nuevo valor para ' + (campo);
+        // Establecer el valor del input en base al valor actual
+       
         // Mostrar el modal
         const modal = new bootstrap.Modal(document.getElementById('modal-editar-campo'));
         modal.show();
@@ -249,16 +247,67 @@
         };
     }
 
-    function formatearNumero(valor) {
-        const numero = parseFloat(valor);
-        if (isNaN(numero)) return '0,00';
+    function guardarCampoSpecial(campos, id){
+        //console.log(campos);
+        fetch(`/productos/${id}/actualizar-campo`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({
+                    campo: 'stock',
+                    cantidad_unidades: campos.cantidad_unidades ? campos.cantidad_unidades : null,
+                    cantidad_bultos: campos.cantidad_bultos ? campos.cantidad_bultos : null,
+                    bultos_min_aviso: campos.bultos_min_aviso ? campos.bultos_min_aviso : null,
+                    cantidad_por_bulto: campos.cantidad_por_bulto ? campos.cantidad_por_bulto : null,
+                    precio_compra_unitario: campos.precio_compra_unitario ? campos.precio_compra_unitario : null,
+                    precio_compra_bulto: campos.precio_compra_bulto ? campos.precio_compra_bulto : null,
+                    precio_venta_unitario: campos.precio_venta_unitario ? campos.precio_venta_unitario : null,
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Actualizar el valor en la tabla
+                    const campoElemento = document.querySelector(`#producto-${id} td[data-field="stock"]`);
 
-        return numero.toLocaleString('es-AR', {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        });
+                    const DivIcon = document.createElement('div');
+                    DivIcon.classList.add('d-flex', 'justify-content-between', 'align-items-center');
+                    const textoSpan = document.createElement('span');
+                    textoSpan.innerText = "Stock";
+
+                    // Agregar ícono de edición
+                    const editarIcono = document.createElement('span');
+                    editarIcono.setAttribute('onclick', `editarCampo('stock', ${id}, JSON.parse('${JSON.stringify(data.producto).replace(/'/g, "\\'")}'))`);
+                    editarIcono.style.cssText =
+                        "display: inline-flex; align-items: center; justify-content: center; padding: 4px; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; transition: background-color 0.2s;";
+                    editarIcono.setAttribute('onmouseover', "this.style.backgroundColor='#f0f0f0'");
+                    editarIcono.setAttribute('onmouseout', "this.style.backgroundColor='transparent'");
+
+                    // Crear el SVG para el ícono de edición
+                    editarIcono.innerHTML = `<svg width="15" height="15" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">
+                                <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
+                                <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z"/>
+                            </svg>`;
+
+                    campoElemento.innerHTML = "";
+                    // Añadir el ícono de edición al final de la celda o campo
+                    DivIcon.appendChild(textoSpan);
+                    DivIcon.appendChild(editarIcono);
+                    campoElemento.appendChild(DivIcon);
+
+                    // Cerrar el modal
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('modal-editar-campo'));
+                    modal.hide();
+                } else {
+                    alert('Error al guardar el cambio.');
+                }
+            })
+            .catch(error => {
+                console.error('Error al actualizar el campo:', error);
+            });
     }
-
     function guardarCampo(campo, id) {
         const nuevoValor = document.getElementById('campo-editar').value;
         // Realizar la actualización en el backend  
@@ -282,14 +331,7 @@
                     const DivIcon = document.createElement('div');
                     DivIcon.classList.add('d-flex', 'justify-content-between', 'align-items-center');
                     const textoSpan = document.createElement('span');
-                    if (campo === 'precio_compra' || campo === 'precio_venta') {
-                        // Si es un campo numérico, convertirlo y actualizar
-                        textoSpan.innerText = '$' + formatearNumero(nuevoValor);
-                    } else {
-                        // Para otros campos, puedes hacer una conversión personalizada si es necesario
-                        textoSpan.innerText = nuevoValor;
-                    }
-
+                    textoSpan.innerText = nuevoValor;
                     // Agregar ícono de edición
                     const editarIcono = document.createElement('span');
                     editarIcono.setAttribute('onclick', `editarCampo('${campo}', ${id})`);
@@ -309,10 +351,6 @@
                     DivIcon.appendChild(textoSpan);
                     DivIcon.appendChild(editarIcono);
                     campoElemento.appendChild(DivIcon);
-
-
-                    //document.querySelector(`#producto-${id} td[data-field="${campo}"]`).innerText = nuevoValor;
-
                     // Cerrar el modal
                     const modal = bootstrap.Modal.getInstance(document.getElementById('modal-editar-campo'));
                     modal.hide();
@@ -379,59 +417,8 @@
                     </td>
                     <td class="campo" data-field="stock" data-id="${producto.id}">
                         <div class="d-flex justify-content-between align-items-center">
-                            <span>${producto.stock}</span>
-                            <span onclick="editarCampo('stock', ${producto.id})"
-                                style="display: inline-flex; align-items: center; justify-content: center; padding: 4px; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; transition: background-color 0.2s;"
-                                onmouseover="this.style.backgroundColor='#f0f0f0'"
-                                onmouseout="this.style.backgroundColor='transparent'">
-                                <svg width="15" height="15" fill="currentColor" class="bi bi-pencil-square"
-                                    viewBox="0 0 16 16">
-                                    <path
-                                        d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z" />
-                                    <path fill-rule="evenodd"
-                                        d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z" />
-                                </svg>
-                            </span>
-                        </div>
-                    </td>
-                    <td class="campo" data-field="stock_minimo" data-id="${producto.id}">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <span>${producto.stock_minimo}</span>
-                            <span onclick="editarCampo('stock_minimo', ${producto.id})"
-                                style="display: inline-flex; align-items: center; justify-content: center; padding: 4px; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; transition: background-color 0.2s;"
-                                onmouseover="this.style.backgroundColor='#f0f0f0'"
-                                onmouseout="this.style.backgroundColor='transparent'">
-                                <svg width="15" height="15" fill="currentColor" class="bi bi-pencil-square"
-                                    viewBox="0 0 16 16">
-                                    <path
-                                        d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z" />
-                                    <path fill-rule="evenodd"
-                                        d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z" />
-                                </svg>
-                            </span>
-                        </div>
-                    </td>
-                    <td class="campo" data-field="precio_compra" data-id="${producto.id}">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <span>${formatearNumero(producto.precio_compra, 2)}</span>
-                            <span onclick="editarCampo('precio_compra', ${producto.id})"
-                                style="display: inline-flex; align-items: center; justify-content: center; padding: 4px; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; transition: background-color 0.2s;"
-                                onmouseover="this.style.backgroundColor='#f0f0f0'"
-                                onmouseout="this.style.backgroundColor='transparent'">
-                                <svg width="15" height="15" fill="currentColor" class="bi bi-pencil-square"
-                                    viewBox="0 0 16 16">
-                                    <path
-                                        d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z" />
-                                    <path fill-rule="evenodd"
-                                        d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z" />
-                                </svg>
-                            </span>
-                        </div>
-                    </td>
-                    <td class="campo" data-field="precio_venta" data-id="${producto.id}">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <span>${ formatearNumero(producto.precio_venta, 2)}</span>
-                            <span onclick="editarCampo('precio_venta', ${producto.id})"
+                            <span>Stock</span>
+                            <span onclick='editarCampo("stock", ${producto.id}, ${JSON.stringify(producto).replace(/"/g, '&quot;')})'
                                 style="display: inline-flex; align-items: center; justify-content: center; padding: 4px; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; transition: background-color 0.2s;"
                                 onmouseover="this.style.backgroundColor='#f0f0f0'"
                                 onmouseout="this.style.backgroundColor='transparent'">

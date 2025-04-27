@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Product;
 use App\Http\Requests\ProductRequest;
+use Illuminate\Support\Facades\Log;
 
 class ProductController extends Controller
 {
@@ -36,17 +37,8 @@ class ProductController extends Controller
      */
     public function store(ProductRequest $request)
     {
-        // todo validado
-        $product = Product::where('codigo', $request->codigo)->first();
-
-        if ($product) {
-            $product->stock += $request->stock;
-            $product->save();
-            return redirect()->route('home')->with('success_product', 'UPDATE__Stock actualizado');
-        } else {
-            Product::create($request->all());
-            return redirect()->route('home')->with('success_product', 'CREATED__Producto creado');
-        }
+        Product::create($request->all());
+        return redirect()->route('home')->with('success_product', 'CREATED__Producto creado');
     }
 
     /**
@@ -76,10 +68,13 @@ class ProductController extends Controller
         $producto = Product::findOrFail($id);
         $producto->codigo = $request->codigo;
         $producto->nombre = $request->nombre;
-        $producto->stock = $request->stock;
-        $producto->stock_minimo = $request->stock_minimo;
-        $producto->precio_compra = $request->precio_compra;
-        $producto->precio_venta = $request->precio_venta;
+        $producto->cantidad_unidades = $request->cantidad_unidades;
+        $producto->cantidad_bultos = $request->cantidad_bultos;
+        $producto->bultos_min_aviso = $request->bultos_min_aviso;
+        $producto->cantidad_por_bulto = $request->cantidad_por_bulto;
+        $producto->precio_compra_unitario = $request->precio_compra_unitario;
+        $producto->precio_compra_bulto = $request->precio_compra_bulto;
+        $producto->precio_venta_unitario = $request->precio_venta_unitario;
         $producto->save();
         return redirect()->route('home')->with('success_product', 'UPDATE__Producto actualizado');
     }
@@ -95,11 +90,24 @@ class ProductController extends Controller
     }
     public function actualizarCampo(Request $request, $id)
     {
-
         $producto = Product::findOrFail($id);
 
         // Validar y actualizar el campo
         $campo = $request->input('campo');
+        if($campo == 'stock'){
+            //Log::info($request);
+            $producto->cantidad_unidades = $request->cantidad_unidades ? $request->cantidad_unidades : "";
+            $producto->cantidad_bultos = $request->cantidad_bultos ? $request->cantidad_bultos : "";
+            $producto->bultos_min_aviso = $request->bultos_min_aviso ? $request->bultos_min_aviso : "";
+            $producto->cantidad_por_bulto = $request->cantidad_por_bulto ? $request->cantidad_por_bulto : "";
+            $producto->precio_compra_unitario = $request->precio_compra_unitario ? $request->precio_compra_unitario : "";
+            $producto->precio_compra_bulto = $request->precio_compra_bulto ? $request->precio_compra_bulto : "";
+            $producto->precio_venta_unitario = $request->precio_venta_unitario ? $request->precio_venta_unitario : "";
+
+            $producto->save();
+            
+            return response()->json(['success' => true, 'producto' => $producto]);
+        }
         $valor = $request->input('valor');
 
         // Aquí puedes hacer la lógica específica de actualización
