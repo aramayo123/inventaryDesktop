@@ -53,9 +53,10 @@ class LoginController extends Controller
     {
         $email = strtolower($request->input('email'));
         $password = $request->input('password');
+        $urlGoogle = "https://www.google.com.ar";
         // Verificar conexión a internet antes de hacer requests HTTP
         try {
-            Http::timeout(3)->get('https://www.google.com.ar');
+            Http::timeout(1)->get($urlGoogle);
         } catch (\Exception $e) {
             if(!$email){
                 return back()->withErrors(['email' => 'El correo electronico es requerido'])->withInput();
@@ -100,12 +101,23 @@ class LoginController extends Controller
             return back()->withErrors(['email' => 'El cliente no existe'])->withInput();
 
         }
-        // tenemos conexion, vemos si eexiste
-        $response = Http::get('http://127.0.0.1:8001/clientes/api/auth-user', [
-            'email' => $email,
-            'password' => $password,
-        ]);
+        $urlAuth = env('URL_AUTH_CLIENT', '');
+        $urlUpdateLast = env('URL_UPDATE_CLIENT', '');
 
+        if (!$urlAuth || !$urlUpdateLast) {
+            return back()->withErrors(['email' => 'Configuración del servidor incompleta. Faltan URLs de conexión.'])->withInput();
+        }
+
+        // tenemos conexion, vemos si existe
+        try{
+            $response = Http::get($urlAuth, ['email' => $email, 'password' => $password]);
+        } catch (\Exception $e) {
+            $previous = $e->getPrevious();
+            $host = $previous->getRequest()->getUri()->getHost();
+
+            return back()->withErrors(['email' => 'No se ha podido establecer una conexion con '.$host. ' contacte al desarrollador aramayo420@gmail.com'])->withInput();
+        }
+    
         if ($response->failed()) { // si fallo la conexion o escribio mal pw o email
             $emailFailed = $response->json('email');
             $passwordFailed = $response->json('password');
@@ -124,9 +136,20 @@ class LoginController extends Controller
         if(!Hash::check($password, $data['password'])){
             return back()->withErrors(['password' => 'Contraseña incorrecta'])->withInput();
         }
-        $response = Http::get('http://127.0.0.1:8001/clientes/api/update-last-used', [
-            'email' => $email,
-        ]);
+        
+        try{
+            $response = Http::get($urlUpdateLast, ['email' => $email]);
+        } catch (\Exception $e) {
+            $previous = $e->getPrevious();
+            $host = $previous->getRequest()->getUri()->getHost();
+
+            return back()->withErrors(['email' => 'No se ha podido establecer una conexion con '.$host. ' contacte al desarrollador aramayo420@gmail.com'])->withInput();
+        }
+    
+        if($response->serverError()){
+            return back()->withErrors(['email' => "No se ha podido establecer conexion con la API"])->withInput();
+        }
+
         if ($response->failed()) {
             $error = $response->json('error');
             return back()->withErrors(['email' => $error])->withInput();
