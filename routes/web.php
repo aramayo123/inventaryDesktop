@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\VentasController;
 
 Auth::routes([
     'register' => false, // Deshabilita el registro
@@ -14,3 +15,4 @@ Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name
 Route::get('/productos/buscar', [ProductController::class, 'BuscarProductos']);
 Route::post('/productos/{id}/actualizar-campo', [ProductController::class, 'actualizarCampo']);
 Route::resource('productos', ProductController::class);
+Route::post('/ventas/registrar-ventas', [VentasController::class, 'storeVenta']);

@@ -56,7 +56,7 @@
                                     @include('productos.index')
                                 </div>
                                 <div class="tab-pane" id="ventas">
-                                    Contenido de ventas
+                                    @include('ventas.index')
                                 </div>
                                 <div class="tab-pane" id="resumen">
                                     Contenido de resumen
@@ -91,8 +91,8 @@
                 });
             });
             if(!none){
-                const button = document.querySelector('[data-tab="inventario"]');
-                const pane = document.querySelector('#inventario');
+                const button = document.querySelector('[data-tab="ventas"]');
+                const pane = document.querySelector('#ventas');
                 pane.classList.add('show');
                 button.classList.add('active');
             }
