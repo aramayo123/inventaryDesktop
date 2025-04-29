@@ -55,15 +55,16 @@ class LoginController extends Controller
         $password = $request->input('password');
         $urlGoogle = "https://www.google.com.ar";
         // Verificar conexión a internet antes de hacer requests HTTP
+
+        if(!$email)
+            return back()->withErrors(['email' => 'El correo electronico es requerido'])->withInput();
+        
+        if(!$password)
+            return back()->withErrors(['password' => 'La contraseña es requerida'])->withInput();
+
         try {
             Http::timeout(1)->get($urlGoogle);
         } catch (\Exception $e) {
-            if(!$email){
-                return back()->withErrors(['email' => 'El correo electronico es requerido'])->withInput();
-            }
-            if(!$password){
-                return back()->withErrors(['password' => 'La contraseña es requerida'])->withInput();
-            }
             // si no hay conexion buscar cliente en la base de datos local
             $client = Client::where('email', $email)->first();
             if ($client) {
@@ -115,6 +116,40 @@ class LoginController extends Controller
             $previous = $e->getPrevious();
             $host = $previous->getRequest()->getUri()->getHost();
 
+            // si no hay conexion buscar cliente en la base de datos local
+            $client = Client::where('email', $email)->first();
+            if ($client) {
+                
+                if(!Hash::check($password, $client->password)){
+                    return back()->withErrors(['password' => 'Contraseña incorrecta'])->withInput();
+                }
+
+                // 🔐 Verificar firma
+                $firmaLocal = hash('sha256', $client->nombre . '|' .
+                    $client->email . '|' .
+                    $client->licencia_expires_at . '|' .
+                    $client->secret_hash);
+
+                if ($client->firma !== $firmaLocal) {
+                    return back()->withErrors(['email' => 'Firma inválida, posible manipulación'])->withInput();
+                }
+
+                // 📅 Verificar expiración
+                if (Carbon::now()->greaterThan($client->licencia_expires_at)) {
+                    return back()->withErrors(['email' => 'Licencia vencida'])->withInput();
+                }
+
+                // 🕓 Verificar si la fecha del sistema fue atrasada
+                if (Carbon::now()->lessThan($client->last_used_at)) {
+                    return back()->withErrors(['email' => 'Fecha del sistema alterada'])->withInput();
+                }    
+
+                $client->last_used_at = now();
+                $client->update();
+
+                Auth::guard('client')->login($client);
+                return redirect()->route('home')->with('success', 'Inicio de sesión local exitoso');
+            }
             return back()->withErrors(['email' => 'No se ha podido establecer una conexion con '.$host. ' contacte al desarrollador aramayo420@gmail.com'])->withInput();
         }
     
