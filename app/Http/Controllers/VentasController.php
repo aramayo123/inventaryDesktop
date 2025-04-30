@@ -7,6 +7,7 @@ use App\Models\Ventas;
 use App\Http\Requests\VentasRequest;
 use Illuminate\Support\Facades\Log;
 use App\Models\Product;
+use App\Models\Factura;
 
 class VentasController extends Controller
 {
@@ -17,6 +18,8 @@ class VentasController extends Controller
         $errores = [];
         $VentasConcretadas = [];
         $totalVenta = 0;
+        $totalCantidades = 0;
+        $totalProductos = 0;
 
         // CONTROL DE STOCK DE UNIDADES Y / O BULTOS
         foreach($productos as $aux){
@@ -24,6 +27,7 @@ class VentasController extends Controller
             $CantidadReq = $aux['cantidad'];
             $idProduct = $aux['id'];
             $producto = Product::where('id', $idProduct)->first();
+            $total = 0;
 
             if($producto){
                 if(!$producto->cantidad_unidades && !$producto->cantidad_bultos){
@@ -49,7 +53,7 @@ class VentasController extends Controller
                         break;
                     }
                 }
-                $totalVenta = $producto->precio_venta_unitario * $CantidadReq;
+                $total = $producto->precio_venta_unitario * $CantidadReq;
             }else{
                 $errores[] = 'El producto con ID '.$idProduct.' no existe.';
                 $VentaCompletada = false;
@@ -57,7 +61,10 @@ class VentasController extends Controller
             }
 
             if($succesProduct == true){
-                array_push($VentasConcretadas, array("producto" => $producto->getAttributes(), "cantidades" => $CantidadReq, "total_venta" => $totalVenta));
+                $totalVenta += $total;
+                $totalCantidades += $CantidadReq;
+                $totalProductos += 1;
+                array_push($VentasConcretadas, array("producto" => $producto->getAttributes(), "cantidad_producto" => $CantidadReq, "total_producto" => $total));
             }
         }
         if($VentaCompletada == false){
@@ -67,31 +74,35 @@ class VentasController extends Controller
             ]);
         }
 
+        // generamos una factura
+        $factura = new Factura();
+        $factura->cliente = "Consumidor final";
+        $factura->cantidad_productos = $totalProductos;
+        $factura->cantidad_unidades = $totalCantidades;
+        $factura->total_venta = $totalVenta;
+        $factura->save();
+
         // GUARDAR VENTA
         foreach($VentasConcretadas as $aux){
             $NewProduct = $aux['producto']; 
 
-            //Log::alert($NewProduct['cantidad_unidades']);
             // actualizamos el producto
-           
             $producto = Product::where('id', $NewProduct['id'])->first();
             $producto->cantidad_unidades = $NewProduct['cantidad_unidades'];
             $producto->cantidad_bultos = $NewProduct['cantidad_bultos'];
             $producto->save();
 
-            $cantidades = $aux['cantidades'];
+            $cantidades = $aux['cantidad_producto'];
             $bultos = intdiv($cantidades, $NewProduct['cantidad_por_bulto']);
             $cantidades -= ($NewProduct['cantidad_por_bulto'] * $bultos);
-            //Log::alert($cantidades);
-            Log::alert($aux['total_venta']);
-            
+      
             // guardamos la venta
             $venta = new Ventas();
-            $venta->cliente = "Consumidor final";
             $venta->product_id = $NewProduct['id'];
+            $venta->factura_id = $factura->id;
             $venta->cantidad_unidades = $cantidades;
             $venta->cantidad_bultos = $bultos;
-            $venta->total_venta = (float)$aux['total_venta'];
+            $venta->total_venta = (float)$aux['total_producto'];
             $venta->save();
         }
         return response()->json([

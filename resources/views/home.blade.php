@@ -3,7 +3,9 @@
 @extends('layouts.app')
 <?php 
     use App\Models\Product;
+    use App\Models\Factura;
     $productos = Product::all();
+    $facturas = Factura::all();
 ?>
 <style>
     .tab-content>.tab-pane {
@@ -59,10 +61,10 @@
                                     @include('ventas.index')
                                 </div>
                                 <div class="tab-pane" id="resumen">
-                                    Contenido de resumen
+                                    @include('ventas.resumen')
                                 </div>
                                 <div class="tab-pane" id="negocio">
-                                    Contenido sobre mi negocio
+                                    @include('minegocio')
                                 </div>
                             </div>
                         </div>

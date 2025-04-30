@@ -4,15 +4,14 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Ventas extends Model
+class Factura extends Model
 {
     //
-    protected $table = 'ventas';
+    protected $table = 'facturas';
     protected $fillable = [
-        'product_id',
-        'factura_id',
+        'cliente',
+        'cantidad_productos',
         'cantidad_unidades',
-        'cantidad_bultos',
         'total_venta',
     ];
 }
