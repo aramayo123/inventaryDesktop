@@ -15,7 +15,7 @@ if (session('success_product')) {
 }
 ?>
 
-<div class="container">
+<div class="">
     @if (session('success_product'))
         <div class="alert alert-{{ $color }} alert-dismissible fade show" role="alert">
             <strong> {{ $message }}</strong>
@@ -97,11 +97,11 @@ if (session('success_product')) {
                         </td>
                         <td>
                             <form action="{{ route('productos.destroy', $producto->id) }}" method="POST"
-                                class="d-inline">
+                                class="d-inline" id="form-eliminar-product">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" class="btn btn-sm btn-danger"
-                                    onclick="return confirm('¿Estás seguro?')">Eliminar</button>
+                                <button type="button" class="btn btn-sm btn-danger btn-eliminar-producto"
+                                onclick="confirmarEliminacion(this)">Eliminar</button>
                             </form>
                         </td>
                     </tr>
@@ -115,6 +115,7 @@ if (session('success_product')) {
 
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <!-- Modal para editar un campo -->
 <div class="modal fade" id="modal-editar-campo" tabindex="-1" aria-labelledby="modal-editar-campoLabel"
     aria-hidden="true">
@@ -301,7 +302,13 @@ if (session('success_product')) {
                     const modal = bootstrap.Modal.getInstance(document.getElementById('modal-editar-campo'));
                     modal.hide();
                 } else {
-                    alert('Error al guardar el cambio.');
+                    Swal.fire({
+                        position: "top-center",
+                        icon: "error",
+                        title: 'Error al guardar el cambio.',
+                        showConfirmButton: false,
+                        timer: 1000
+                    });
                 }
             })
             .catch(error => {
@@ -355,7 +362,13 @@ if (session('success_product')) {
                     const modal = bootstrap.Modal.getInstance(document.getElementById('modal-editar-campo'));
                     modal.hide();
                 } else {
-                    alert('Error al guardar el cambio.');
+                    Swal.fire({
+                        position: "top-center",
+                        icon: "error",
+                        title: 'Error al guardar el cambio.',
+                        showConfirmButton: false,
+                        timer: 1000
+                    });
                 }
             })
             .catch(error => {
@@ -438,11 +451,11 @@ if (session('success_product')) {
                             class="btn btn-sm btn-warning">Editar</a>
                         !-->
                         <form action="/productos/${producto.id}" method="POST"
-                            class="d-inline">
+                            class="d-inline" id="form-eliminar-product-${producto.id}">
                             @csrf
                             @method('DELETE')
-                            <button type="submit" class="btn btn-sm btn-danger"
-                                onclick="return confirm('¿Estás seguro?')">Eliminar</button>
+                            <button type="button" class="btn btn-sm btn-danger btn-eliminar-producto"
+                            onclick="confirmarEliminacion(this)">Eliminar</button>
                         </form>
                     </td>
                 </tr>
@@ -479,6 +492,7 @@ if (session('success_product')) {
     });
     document.addEventListener('DOMContentLoaded', () => {
         buscarProductos(inputSearch.value, 1); // Carga inicial
+        
     });
 
     function renderPaginacion(data) {
@@ -517,5 +531,22 @@ if (session('success_product')) {
 
         renderProductos(paginatedData.data);
         renderPaginacion(paginatedData);
+    }
+
+    function confirmarEliminacion(btn) {
+        Swal.fire({
+            title: '¿Estás seguro?',
+            text: "¡Esta acción no se puede deshacer!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                btn.closest('form').submit();
+            }
+        });
     }
 </script>

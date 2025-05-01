@@ -1,4 +1,4 @@
-<div class="container">
+<div class="">
     <!-- Información general -->
     <div class="row mb-4">
         <div class="col-md-4 mb-3">
@@ -113,7 +113,13 @@
                 .then(data => {
                     if (data.success) {
                         ActualizarCarts();
-                        alert(data.success);
+                        Swal.fire({
+                            position: "top-center",
+                            icon: "success",
+                            title: data.success,
+                            showConfirmButton: false,
+                            timer: 1000
+                        });
                         /*
                         facturas = facturas.filter(factura => {
                             if (factura.id == idFactura) {
@@ -124,8 +130,13 @@
                         console.log(facturas);
                         */
                     } else {
-                        console.log(data);
-                        alert(data.error);
+                        Swal.fire({
+                            position: "top-center",
+                            icon: "error",
+                            title: data.error,
+                            showConfirmButton: false,
+                            timer: 1000
+                        });
                     }
                 })
                 .catch(error => console.error('Error:', error));

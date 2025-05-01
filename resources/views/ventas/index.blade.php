@@ -9,7 +9,7 @@
         /* Siempre visibles */
     }
 </style>
-<div class="container">
+<div class="">
     <!-- Información general -->
     <div class="row mb-4">
         <div class="col-md-4 mb-3">
@@ -71,6 +71,7 @@
         <button class="btn btn-success btn-lg" onclick="finalizarVenta()">Finalizar Venta</button>
     </div>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
     const products = @json($productos);
 
@@ -238,12 +239,42 @@
     document.addEventListener('input', function(e) {
         if (e.target.classList.contains('cantidad')) {
             const idProducto = e.target.id.split('-')[1];
+            const product = addedProducts.find(p => p.id == idProducto);
+            if (product) {
+                const cantidad = parseInt(e.target.value) || 0;
+                if (cantidad > product.cantidad_unidades + (product.cantidad_bultos * product.cantidad_por_bulto)) {
+                    e.target.value = product.cantidad_unidades + (product.cantidad_bultos * product.cantidad_por_bulto);
+                    Swal.fire({
+                        position: "top-center",
+                        icon: "error",
+                        title: "No hay suficiente stock del producto " + product.nombre+".",
+                        showConfirmButton: false,
+                        timer: 1000
+                    });
+                    return;
+                }
+            }
             actualizarSubtotal(idProducto);
         }
     });
     document.addEventListener('change', function(e) {
         if (e.target.classList.contains('cantidad')) {
             const idProducto = e.target.id.split('-')[1];
+            const product = addedProducts.find(p => p.id == idProducto);
+            if (product) {
+                const cantidad = parseInt(e.target.value) || 0;
+                if (cantidad > product.cantidad_unidades + (product.cantidad_bultos * product.cantidad_por_bulto)) {
+                    e.target.value = product.cantidad_unidades + (product.cantidad_bultos * product.cantidad_por_bulto);
+                    Swal.fire({
+                        position: "top-center",
+                        icon: "error",
+                        title: "No hay suficiente stock del producto " + product.nombre+".",
+                        showConfirmButton: false,
+                        timer: 1000
+                    });
+                    return;
+                }
+            }
             actualizarSubtotal(idProducto);
         }
     });
@@ -279,7 +310,13 @@
 
     function finalizarVenta() {
         if (addedProducts.length === 0) {
-            alert('No hay productos en el carrito.');
+            Swal.fire({
+                position: "top-center",
+                icon: "error",
+                title: "No hay productos en el carrito.",
+                showConfirmButton: false,
+                timer: 1000
+            });
             return;
         }
 
@@ -289,9 +326,6 @@
             cantidad: cantidades[index]
         }));
 
-        // Aquí puedes enviar los datos al servidor o procesarlos como necesites
-        //console.log('Productos a finalizar:', ProductosFinales);
-        // Ejemplo de envío de datos usando fetch
         fetch('/ventas/registrar-ventas', {
             method: 'POST',
             headers: {
@@ -303,12 +337,22 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    alert(data.success);
-                    location.reload(true);
-                    //location.reload(); // Recargar la página o redirigir a otra vista
+                    Swal.fire({
+                        position: "top-center",
+                        icon: "success",
+                        title: data.success,
+                        showConfirmButton: false,
+                        timer: 1000
+                    });
+                    location.reload();
                 } else {
-                    console.log(data);
-                    alert(data.error);
+                    Swal.fire({
+                        position: "top-center",
+                        icon: "error",
+                        title: data.error,
+                        showConfirmButton: false,
+                        timer: 1000
+                    });
                 }
             })
             .catch(error => console.error('Error:', error));
