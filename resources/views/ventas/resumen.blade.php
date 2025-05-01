@@ -47,7 +47,7 @@
 </div>
 <!-- Modal -->
 <div class="modal fade" id="modal-show-campo" tabindex="-1" aria-labelledby="modal-show-campoLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg"> <!-- modal grande -->
+    <div class="modal-dialog modal-xl" style="max-width: 95vw !important; width: 95vw !important;">
         <div class="modal-content">
             <div class="modal-header bg-primary text-white">
                 <h5 class="modal-title" id="modal-show-campoLabel">Ventas de la factura</h5>
@@ -64,6 +64,8 @@
         </div>
     </div>
 </div>
+
+
 <script>
     const facturas = @json($facturas);
 
@@ -77,12 +79,13 @@
         facturas.forEach(factura => {
             const row = document.createElement('tr');
             row.classList.add('fade-in');
-
+            const totalFormat = factura.total_venta.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' }).replace('¤', '').replace(',', '.');
+               
             row.innerHTML = `
                 <td>${factura.cliente}</td>
                 <td class="text-center">${ factura.cantidad_productos }</td>
                 <td class="text-center">${ factura.cantidad_unidades }</td>
-                <td class="text-center">$${ parseFloat(factura.total_venta).toFixed(2) }</td>
+                <td class="text-center">${ totalFormat }</td>
                 <td class="text-center" data-factura="${factura.id}">
                     <button class="btn btn-info btn-sm show-btn" onclick="mostrarVentasFactura(${factura.id})">Ver</button>
                     <button class="btn btn-danger btn-sm eliminar-btn">Eliminar</button>
@@ -180,15 +183,19 @@
                         totalVenta += parseFloat(venta.total_venta);
                         totalBultos += (venta.cantidad_bultos);
 
+                        const totalFormat = venta.total_venta.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' }).replace('¤', '').replace(',', '.');
+             
                         html += `
                         <tr>
                             <td>${venta.producto_nombre}</td>
                             <td>${venta.cantidad_unidades}</td>
                             <td>${venta.cantidad_bultos}x${venta.cantidad_por_bulto}</td>
-                            <td>$${parseFloat(venta.total_venta).toFixed(2)}</td>
+                            <td>${totalFormat}</td>
                             <td>${formatFecha(venta.fecha)}</td>
                         </tr>`;
                     });
+
+                    const totalFormatTo = totalVenta.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' }).replace('¤', '').replace(',', '.');
 
                     html += `
                     </tbody>
@@ -197,7 +204,7 @@
                             <td>Total</td>
                             <td>${totalUnidades}</td>
                             <td>${totalBultos}</td>
-                            <td>$${totalVenta.toFixed(2)}</td>
+                            <td>${totalFormatTo}</td>
                             <td></td>
                         </tr>
                     </tfoot>
@@ -250,9 +257,11 @@
                     ganancia += parseFloat(venta.ganancia);
                     ventastotales += parseFloat(venta.venta_total);
                 }
+                const ventasTotalesFormat = ventastotales.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' }).replace('¤', '').replace(',', '.');
+                const gananciaFormat = ganancia.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' }).replace('¤', '').replace(',', '.');
 
-                ventasdehoy.innerText = `$${ventastotales.toFixed(2)}`;
-                gananciadehoy.innerText = `$${ganancia.toFixed(2)}`;
+                ventasdehoy.innerText = `${ventasTotalesFormat}`;
+                gananciadehoy.innerText = `${gananciaFormat}`;
             })
             .catch(error => {
                 console.error('Error al obtener datos', error);

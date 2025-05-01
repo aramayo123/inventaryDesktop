@@ -248,9 +248,9 @@ if (session('success_product')) {
         };
     }
 
-    function guardarCampoSpecial(campos, id){
+    function guardarCampoSpecial(campos, idBuscado){
         //console.log(campos);
-        fetch(`/productos/${id}/actualizar-campo`, {
+        fetch(`/productos/${idBuscado}/actualizar-campo`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -271,7 +271,7 @@ if (session('success_product')) {
             .then(data => {
                 if (data.success) {
                     // Actualizar el valor en la tabla
-                    const campoElemento = document.querySelector(`#producto-${id} td[data-field="stock"]`);
+                    const campoElemento = document.querySelector(`#producto-${idBuscado} td[data-field="stock"]`);
 
                     const DivIcon = document.createElement('div');
                     DivIcon.classList.add('d-flex', 'justify-content-between', 'align-items-center');
@@ -280,7 +280,7 @@ if (session('success_product')) {
 
                     // Agregar ícono de edición
                     const editarIcono = document.createElement('span');
-                    editarIcono.setAttribute('onclick', `editarCampo('stock', ${id}, JSON.parse('${JSON.stringify(data.producto).replace(/'/g, "\\'")}'))`);
+                    editarIcono.setAttribute('onclick', `editarCampo('stock', ${idBuscado}, JSON.parse('${JSON.stringify(data.producto).replace(/'/g, "\\'")}'))`);
                     editarIcono.style.cssText =
                         "display: inline-flex; align-items: center; justify-content: center; padding: 4px; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; transition: background-color 0.2s;";
                     editarIcono.setAttribute('onmouseover', "this.style.backgroundColor='#f0f0f0'");
@@ -301,6 +301,18 @@ if (session('success_product')) {
                     // Cerrar el modal
                     const modal = bootstrap.Modal.getInstance(document.getElementById('modal-editar-campo'));
                     modal.hide();
+                    console.log(data)
+                    // para mejorar la logica vamos a actualizar el array en js tambien
+                    const index = products.findIndex(p => p.id === idBuscado);
+                    if (index !== -1) {
+                        products[index].cantidad_unidades = data.producto.cantidad_unidades ? data.producto.cantidad_unidades : null;
+                        products[index].cantidad_bultos = data.producto.cantidad_bultos ? data.producto.cantidad_bultos : null;
+                        products[index].bultos_min_aviso = data.producto.bultos_min_aviso ? data.producto.bultos_min_aviso : null;
+                        products[index].cantidad_por_bulto = data.producto.cantidad_por_bulto ? data.producto.cantidad_por_bulto : null;
+                        products[index].precio_compra_unitario = data.producto.precio_compra_unitario ? data.producto.precio_compra_unitario : null;
+                        products[index].precio_compra_bulto = data.producto.precio_compra_bulto ? data.producto.precio_compra_bulto : null;
+                        products[index].precio_venta_unitario = data.producto.precio_venta_unitario ? data.producto.precio_venta_unitario : null;
+                    }
                 } else {
                     Swal.fire({
                         position: "top-center",
@@ -315,10 +327,10 @@ if (session('success_product')) {
                 console.error('Error al actualizar el campo:', error);
             });
     }
-    function guardarCampo(campo, id) {
+    function guardarCampo(campo, idBuscado) {
         const nuevoValor = document.getElementById('campo-editar').value;
         // Realizar la actualización en el backend  
-        fetch(`/productos/${id}/actualizar-campo`, {
+        fetch(`/productos/${idBuscado}/actualizar-campo`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -333,7 +345,7 @@ if (session('success_product')) {
             .then(data => {
                 if (data.success) {
                     // Actualizar el valor en la tabla
-                    const campoElemento = document.querySelector(`#producto-${id} td[data-field="${campo}"]`);
+                    const campoElemento = document.querySelector(`#producto-${idBuscado} td[data-field="${campo}"]`);
 
                     const DivIcon = document.createElement('div');
                     DivIcon.classList.add('d-flex', 'justify-content-between', 'align-items-center');
@@ -341,7 +353,7 @@ if (session('success_product')) {
                     textoSpan.innerText = nuevoValor;
                     // Agregar ícono de edición
                     const editarIcono = document.createElement('span');
-                    editarIcono.setAttribute('onclick', `editarCampo('${campo}', ${id})`);
+                    editarIcono.setAttribute('onclick', `editarCampo('${campo}', ${idBuscado})`);
                     editarIcono.style.cssText =
                         "display: inline-flex; align-items: center; justify-content: center; padding: 4px; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; transition: background-color 0.2s;";
                     editarIcono.setAttribute('onmouseover', "this.style.backgroundColor='#f0f0f0'");
@@ -361,6 +373,17 @@ if (session('success_product')) {
                     // Cerrar el modal
                     const modal = bootstrap.Modal.getInstance(document.getElementById('modal-editar-campo'));
                     modal.hide();
+
+                    // para mejorar la logica vamos a actualizar el array en js tambien
+                    const index = products.findIndex(p => p.id === idBuscado);
+                    if (index !== -1) {
+                        if(campo === 'nombre')
+                            products[index].nombre = nuevoValor;
+                        else if(campo === 'codigo')
+                            products[index].codigo = nuevoValor;
+                    }
+                    //console.log(products)
+
                 } else {
                     Swal.fire({
                         position: "top-center",

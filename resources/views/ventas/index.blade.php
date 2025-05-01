@@ -161,13 +161,16 @@
         const row = document.createElement('tr');
         row.classList.add('fade-in');
 
+        const precioVenta = parseFloat(producto.precio_venta_unitario);
+        const precioVentaFormateado = precioVenta.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' }).replace('¤', '').replace(',', '.');
+        //console.log(precioVentaFormateado);
         row.innerHTML = `
           <td>${producto.nombre}</td>
           <td class="text-center">
               <input type="number" class="form-control form-control-sm cantidad" name="cantidad" id="cantidad-${producto.id}" value="1" min="1" style="width:80px; margin:auto;">
           </td>
-          <td class="text-center" id="precio-${producto.id}">$${parseFloat(producto.precio_venta_unitario).toFixed(2)}</td>
-          <td class="text-center subtotal" id="subtotal-${producto.id}">$${parseFloat(producto.precio_venta_unitario).toFixed(2)}</td>
+          <td class="text-center" id="precio-${producto.id}">${precioVentaFormateado}</td>
+          <td class="text-center subtotal" id="subtotal-${producto.id}">${precioVentaFormateado}</td>
           <td class="text-center" data-product="${producto.id}">
               <button class="btn btn-danger btn-sm eliminar-btn">Eliminar</button>
           </td>
@@ -249,7 +252,7 @@
                         icon: "error",
                         title: "No hay suficiente stock del producto " + product.nombre+".",
                         showConfirmButton: false,
-                        timer: 1000
+                        timer: 1500
                     });
                     return;
                 }
@@ -270,7 +273,7 @@
                         icon: "error",
                         title: "No hay suficiente stock del producto " + product.nombre+".",
                         showConfirmButton: false,
-                        timer: 1000
+                        timer: 1500
                     });
                     return;
                 }
@@ -286,15 +289,19 @@
 
         document.querySelectorAll('#tablaProductos tr').forEach(tr => {
             const cantidadInput = tr.querySelector('.cantidad');
-            const precioUnitario = parseFloat(tr.children[2].textContent.replace('$', '').replace(',', '')) ||
-            0;
+            const precioUnitario =  parseFloat(tr.children[2].textContent
+                .replace('$', '') // Elimina el símbolo de dólar
+                .replace('.', '') // Elimina el punto de miles
+                .replace(',', '.') // Cambia la coma por un punto decimal
+            ) || 0;
 
             const cantidad = parseInt(cantidadInput?.value || 0);
             const subtotalCell = tr.querySelector('.subtotal');
 
             if (cantidad > 0 && subtotalCell) {
                 const subtotal = cantidad * precioUnitario;
-                subtotalCell.textContent = `$${subtotal.toFixed(2)}`;
+                const subTotalFormateado = subtotal.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' }).replace('¤', '').replace(',', '.');
+                subtotalCell.textContent = `${subTotalFormateado}`;
 
                 cantidadTotal += cantidad;
                 productosDiferentes++;
@@ -302,9 +309,10 @@
             }
         });
 
+        const precioTotalFormateado = precioTotal.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' }).replace('¤', '').replace(',', '.');
         document.getElementById('cantidadProductos').textContent = cantidadTotal;
         document.getElementById('productosDiferentes').textContent = productosDiferentes;
-        document.getElementById('precioTotal').textContent = `$${precioTotal.toFixed(2)}`;
+        document.getElementById('precioTotal').textContent = `${precioTotalFormateado}`;
     }
 
 
@@ -315,7 +323,7 @@
                 icon: "error",
                 title: "No hay productos en el carrito.",
                 showConfirmButton: false,
-                timer: 1000
+                timer: 1500
             });
             return;
         }
@@ -342,16 +350,19 @@
                         icon: "success",
                         title: data.success,
                         showConfirmButton: false,
-                        timer: 1000
+                        timer: 1500
                     });
-                    location.reload();
+                    setTimeout(function () {
+                        location.reload();
+                    }, 1500); 
+                    
                 } else {
                     Swal.fire({
                         position: "top-center",
                         icon: "error",
                         title: data.error,
                         showConfirmButton: false,
-                        timer: 1000
+                        timer: 1500
                     });
                 }
             })
