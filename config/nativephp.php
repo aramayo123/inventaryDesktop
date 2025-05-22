@@ -88,7 +88,7 @@ return [
          * The updater provider to use.
          * Supported: "github", "s3", "spaces"
          */
-        'default' => env('NATIVEPHP_UPDATER_PROVIDER', 'spaces'),
+        'default' => env('NATIVEPHP_UPDATER_PROVIDER', 'github'),
 
         'providers' => [
             'github' => [
@@ -101,7 +101,7 @@ return [
                 'channel' => env('GITHUB_CHANNEL', 'latest'),
                 'releaseType' => env('GITHUB_RELEASE_TYPE', 'draft'),
             ],
-
+        
             's3' => [
                 'driver' => 's3',
                 'key' => env('AWS_ACCESS_KEY_ID'),
@@ -121,6 +121,7 @@ return [
                 'path' => env('NATIVEPHP_UPDATER_PATH', null),
             ],
         ],
+        //'restart' => true, // reinicia la app tras actualizar
     ],
 
     /**
@@ -139,7 +140,7 @@ return [
      */
     'prebuild' => [
         'npm run build', // Run a command before the build
-        'php artisan optimize', // Run another command before the build
+        //'php artisan optimize', // Run another command before the build
     ],
 
     'postbuild' => [

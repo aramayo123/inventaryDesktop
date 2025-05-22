@@ -19,7 +19,7 @@ class NativeAppServiceProvider implements ProvidesPhpIni
         ->height(600)
         ->hideMenu()
         ->resizable(false);
-        
+
         MenuBar::create()
         ->icon(storage_path('icon.png'));
     }
