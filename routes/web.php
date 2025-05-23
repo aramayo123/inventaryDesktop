@@ -32,5 +32,10 @@ Route::middleware([CheckLicenseValidity::class])->group(function () {
     Route::get('/facturas/top-productos-vendidos/{dias}', [FacturaController::class, 'topProductosVendidosPorDias']);
     Route::get('/facturas/resumen-por-fecha/{fecha}', [FacturaController::class, 'resumenPorFecha']);
     Route::get('/facturas/top-productos-vendidos-por-fecha/{fecha}', [FacturaController::class, 'topProductosVendidosPorFecha']);
+    Route::get('/check-updates', function () {
+        $updateChecker = app(App\Services\UpdateChecker::class);
+        $result = $updateChecker->checkForUpdates();
+        return response()->json($result);
+    });
 });
 

@@ -68,6 +68,15 @@
     </div>
 </div>
 
+<div id="actualizador">
+  <button id="btn-actualizar" class="btn btn-warning">Actualizar ahora</button>
+  <div id="progreso" style="display:none;">
+    <div class="progress my-3">
+      <div id="barra-progreso" class="progress-bar progress-bar-striped progress-bar-animated" style="width:0%">0%</div>
+    </div>
+    <div id="mensaje-progreso" class="text-center"></div>
+  </div>
+</div>
 
 <script>
     // Lógica para cargar productos y mostrar avisos/top bajo stock
@@ -91,4 +100,30 @@
                     `<tr><td>${p.nombre}</td><td>${p.codigo}</td><td>${p.cantidad_por_bulto}</td><td>${p.bultos_min_aviso}</td></tr>`;
             });
         });
+
+const pasos = [
+  'Esperando...',
+  'Consultando GitHub...',
+  'Descargando actualización...',
+  'Descomprimiendo...',
+  'Reemplazando archivos...',
+  '¡Actualización completada!'
+];
+document.getElementById('btn-actualizar').onclick = function() {
+  this.disabled = true;
+  document.getElementById('progreso').style.display = '';
+  document.getElementById('mensaje-progreso').innerText = 'Consultando actualizaciones...';
+  fetch('/check-updates')
+    .then(r => r.json())
+    .then(data => {
+      if (data.success) {
+        document.getElementById('mensaje-progreso').innerText = data.message;
+      } else {
+        document.getElementById('mensaje-progreso').innerText = 'Error: ' + data.message;
+      }
+    })
+    .catch(err => {
+      document.getElementById('mensaje-progreso').innerText = 'Error: ' + err.message;
+    });
+};
 </script>
