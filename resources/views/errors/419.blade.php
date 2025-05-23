@@ -1,0 +1,1 @@
+@include('errors.custom', ['message' => $message ?? 'La sesión expiró o el token CSRF no es válido']) 

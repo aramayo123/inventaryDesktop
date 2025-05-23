@@ -1,0 +1,120 @@
+:root {
+  --color-primario: rgba(222,184,135);   /* Fondo principal */
+  --color-secundario: rgba(210,153,103);   /* Recuadros secundarios */
+  --color-terciario: rgba(139,69,19);    /* Botones generales */
+  --color-cuartario: rgba(139,69,19);            /* Success (verde) */
+  --color-quintario: #dc3545;            /* Warning (rojo) */
+  --color-font: #fff;                    /* Color global de fuente */
+}
+
+body, table, th, td, .card, .modal-content, .navbar, .form-control, .btn, .alert, .dropdown-menu, .nav-link, .navbar-brand, .modal-title, .card-title, .card-header, .card-body, .modal-header, .modal-footer, .dropdown-item {
+  color: var(--color-font) !important;
+}
+.active>.page-link{
+  color: var(--color-font) !important;
+  background-color: var(--color-terciario) !important;
+  border-color: var(--color-secundario) !important;
+}
+.page-link{
+  color: var(--color-terciario) !important;
+}
+body, .bg-primary, .bg-secondary, .bg-warning, .bg-danger, .bg-success, .bg-info {
+  background-color: var(--color-primario) !important;
+}
+.nav-tabs .nav-item.show .nav-link, .nav-tabs .nav-link.active {
+  color: var(--color-font) !important;
+  background-color: var(--color-terciario) !important;
+  border-color: var(--color-secundario) !important;
+}
+.card, .card-body, .modal-content, .bg-secondary {
+  background-color: var(--color-secundario) !important;
+}
+.list-group-item {
+  background-color: var(--color-secundario) !important;
+  border: var(--color-terciario) !important;
+  color: var(--color-font) !important;
+}
+.text-muted {
+  color: var(--color-font) !important;
+}
+.form-control:disabled {
+  background-color: var(--color-secundario) !important;
+}
+.form-control {
+  background-color: var(--color-secundario) !important;
+}
+.form-control:focus {
+  background-color: var(--color-secundario) !important;
+}
+.dropdown-item {
+  background-color: var(--color-primario) !important;
+}
+.dropdown-item:hover {
+  background-color: var(--color-secundario) !important;
+}
+.form-select {
+  background-color: var(--color-secundario) !important;
+}
+/* Botones generales (info, light, dark, outline, etc. excepto success y warning) */
+.btn, .btn-terciario, .btn-info, .btn-light, .btn-dark, .btn-outline-info, .btn-outline-light, .btn-outline-dark {
+  background-color: var(--color-terciario) !important;
+  border-color: var(--color-terciario) !important;
+}
+
+/* Botón success */
+.btn-success, .btn-outline-success {
+  background-color: var(--color-cuartario) !important;
+  border-color: var(--color-cuartario) !important;
+}
+
+/* Botón warning (rojo) */
+.btn-warning, .btn-outline-warning, .btn-danger, .btn-outline-danger {
+  background-color: var(--color-quintario) !important;
+  border-color: var(--color-quintario) !important;
+}
+
+/* Alertas */
+.alert-primary, .alert-info, .alert-dark, .alert-light {
+  background-color: var(--color-primario) !important;
+  border-color: var(--color-primario) !important;
+}
+.alert-secondary {
+  background-color: var(--color-secundario) !important;
+  border-color: var(--color-secundario) !important;
+}
+.alert-success {
+  background-color: var(--color-cuartario) !important;
+  border-color: var(--color-cuartario) !important;
+}
+.alert-warning, .alert-danger {
+  background-color: var(--color-quintario) !important;
+  border-color: var(--color-quintario) !important;
+}
+
+/* Tablas */
+table, th, td {
+  background-color: transparent !important;
+}
+.table-primary > thead, .table-info > thead, .table-dark > thead, .table-light > thead {
+  background-color: var(--color-primario) !important;
+}
+.table-secondary > thead {
+  background-color: var(--color-secundario) !important;
+}
+.table-success > thead {
+  background-color: var(--color-cuartario) !important;
+}
+.table-warning > thead, .table-danger > thead {
+  background-color: var(--color-quintario) !important;
+}
+
+/* Navbar */
+.navbar, .navbar.bg-white {
+  background-color: var(--color-primario) !important;
+}
+
+/* Otros */
+.form-control:focus {
+  border-color: var(--color-primario) !important;
+  box-shadow: 0 0 0 0.2rem rgba(222,184,135,.25) !important;
+} 

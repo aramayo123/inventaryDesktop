@@ -1,0 +1,1 @@
+@include('errors.custom', ['message' => $message ?? 'Error interno del servidor']) 

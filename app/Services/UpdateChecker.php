@@ -23,7 +23,7 @@ class UpdateChecker
     {
         $owner = env('GITHUB_OWNER', 'aramayo123');
         $repo = env('GITHUB_REPO', 'inventaryDesktop');
-        $token = env('GITHUB_TOKEN', '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');
+        $token = env('GITHUB_TOKEN', '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');
 
         logger()->info("Verificando actualizaciones...");
         logger()->info("Versión actual: " . self::CURRENT_VERSION);
