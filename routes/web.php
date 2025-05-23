@@ -28,4 +28,8 @@ Route::middleware([CheckLicenseValidity::class])->group(function () {
     Route::post('/facturas/eliminar-factura', [FacturaController::class, 'EliminarFactura']);
     Route::get('/facturas/todas-las-ventas/{id}', [FacturaController::class, 'VerVentas']);
     Route::get('/facturas/facturas-hoy', [FacturaController::class, 'FacturasHoy']);
+    Route::get('/facturas/resumen-por-dias/{dias}', [FacturaController::class, 'resumenPorDias']);
+    Route::get('/facturas/top-productos-vendidos/{dias}', [FacturaController::class, 'topProductosVendidosPorDias']);
+    Route::get('/facturas/resumen-por-fecha/{fecha}', [FacturaController::class, 'resumenPorFecha']);
+    Route::get('/facturas/top-productos-vendidos-por-fecha/{fecha}', [FacturaController::class, 'topProductosVendidosPorFecha']);
 });

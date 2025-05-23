@@ -359,7 +359,7 @@ class ProductSeeder extends Seeder
             ],
             [
                 'codigo' => '77900704230028',
-                'nombre' => 'Mayonesa Hellmann’s 800g',
+                'nombre' => "Mayonesa Hellmann's 800g",
                 'cantidad_unidades' => 50,
                 'cantidad_bultos' => 5,
                 'bultos_min_aviso' => 2,
@@ -512,6 +512,38 @@ class ProductSeeder extends Seeder
                 'precio_venta_unitario' => 3000.00,
             ]
         ];
+
+        // --- INICIO CORRECCIÓN DE REPETIDOS ---
+        $nombres = [];
+        $codigos = [];
+        foreach ($productos as $k => &$prod) {
+            // Corregir nombres repetidos
+            $nombreOriginal = $prod['nombre'];
+            $nombre = $nombreOriginal;
+            $i = 2;
+            while (in_array($nombre, $nombres)) {
+                $nombre = $nombreOriginal . ' (Variante ' . $i . ')';
+                $i++;
+            }
+            $prod['nombre'] = $nombre;
+            $nombres[] = $nombre;
+            // Corregir códigos repetidos
+            $codigoOriginal = $prod['codigo'];
+            $codigo = $codigoOriginal;
+            $j = 1;
+            while (in_array($codigo, $codigos)) {
+                // Cambia el último dígito o agrega uno nuevo
+                if (is_numeric($codigo)) {
+                    $codigo = substr($codigoOriginal, 0, -1) . $j;
+                } else {
+                    $codigo = $codigoOriginal . $j;
+                }
+                $j++;
+            }
+            $prod['codigo'] = $codigo;
+            $codigos[] = $codigo;
+        }
+        // --- FIN CORRECCIÓN DE REPETIDOS ---
 
         foreach ($productos as $producto) {
             Product::create($producto);
