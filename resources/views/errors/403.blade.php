@@ -1,0 +1,1 @@
+@include('errors.custom', ['message' => $message ?? 'No tienes permisos para acceder a esta página']) 

@@ -33,3 +33,4 @@ Route::middleware([CheckLicenseValidity::class])->group(function () {
     Route::get('/facturas/resumen-por-fecha/{fecha}', [FacturaController::class, 'resumenPorFecha']);
     Route::get('/facturas/top-productos-vendidos-por-fecha/{fecha}', [FacturaController::class, 'topProductosVendidosPorFecha']);
 });
+

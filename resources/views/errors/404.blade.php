@@ -1,0 +1,1 @@
+@include('errors.custom', ['message' => $message ?? 'Página no encontrada']) 
