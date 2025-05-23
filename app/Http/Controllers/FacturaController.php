@@ -133,4 +133,124 @@ class FacturaController extends Controller
 
         return response()->json($ventasFormateadas);
     }
+    public function resumenPorDias($dias) {
+        $fechaInicio = now()->subDays($dias - 1)->startOfDay();
+        $fechaFin = now()->endOfDay();
+        $facturas = Factura::whereBetween('created_at', [$fechaInicio, $fechaFin])->get();
+
+        $ventasTotales = 0;
+        $gananciaTotal = 0;
+        $productosVendidos = 0;
+
+        foreach($facturas as $factura){
+            $ventas = Ventas::where('factura_id', $factura->id)->get();
+            foreach ($ventas as $venta) {
+                $producto = Product::find($venta->product_id);
+                if (!$producto) continue;
+                $precioVenta = $producto->precio_venta_unitario;
+                $precioCompra = $producto->precio_compra_unitario;
+                $cantidadTotal = $venta->cantidad_unidades + ($venta->cantidad_bultos * $producto->cantidad_por_bulto);
+                $ventasTotales += ($cantidadTotal * $precioVenta);
+                $gananciaTotal += ($cantidadTotal * $precioVenta) - ($cantidadTotal * $precioCompra);
+                $productosVendidos += $cantidadTotal;
+            }
+        }
+        return response()->json([
+            'ventas_totales' => $ventasTotales,
+            'ganancia_total' => $gananciaTotal,
+            'productos_vendidos' => $productosVendidos
+        ]);
+    }
+    public function topProductosVendidosPorDias($dias) {
+        $fechaInicio = now()->subDays($dias - 1)->startOfDay();
+        $fechaFin = now()->endOfDay();
+        $facturas = Factura::whereBetween('created_at', [$fechaInicio, $fechaFin])->get();
+
+        $productos = [];
+        foreach($facturas as $factura){
+            $ventas = Ventas::where('factura_id', $factura->id)->get();
+            foreach ($ventas as $venta) {
+                $producto = Product::find($venta->product_id);
+                if (!$producto) continue;
+                $key = $producto->id;
+                $cantidadTotal = $venta->cantidad_unidades + ($venta->cantidad_bultos * $producto->cantidad_por_bulto);
+                $totalRecaudado = $cantidadTotal * $producto->precio_venta_unitario;
+                if (!isset($productos[$key])) {
+                    $productos[$key] = [
+                        'nombre' => $producto->nombre,
+                        'codigo' => $producto->codigo,
+                        'cantidad_vendida' => 0,
+                        'total_recaudado' => 0
+                    ];
+                }
+                $productos[$key]['cantidad_vendida'] += $cantidadTotal;
+                $productos[$key]['total_recaudado'] += $totalRecaudado;
+            }
+        }
+        // Ordenar por cantidad_vendida desc
+        usort($productos, function($a, $b) {
+            return $b['cantidad_vendida'] <=> $a['cantidad_vendida'];
+        });
+        return response()->json(array_values($productos));
+    }
+    public function resumenPorFecha($fecha) {
+        $fechaInicio = \Carbon\Carbon::parse($fecha)->startOfDay();
+        $fechaFin = \Carbon\Carbon::parse($fecha)->endOfDay();
+        $facturas = Factura::whereBetween('created_at', [$fechaInicio, $fechaFin])->get();
+
+        $ventasTotales = 0;
+        $gananciaTotal = 0;
+        $productosVendidos = 0;
+
+        foreach($facturas as $factura){
+            $ventas = Ventas::where('factura_id', $factura->id)->get();
+            foreach ($ventas as $venta) {
+                $producto = Product::find($venta->product_id);
+                if (!$producto) continue;
+                $precioVenta = $producto->precio_venta_unitario;
+                $precioCompra = $producto->precio_compra_unitario;
+                $cantidadTotal = $venta->cantidad_unidades + ($venta->cantidad_bultos * $producto->cantidad_por_bulto);
+                $ventasTotales += ($cantidadTotal * $precioVenta);
+                $gananciaTotal += ($cantidadTotal * $precioVenta) - ($cantidadTotal * $precioCompra);
+                $productosVendidos += $cantidadTotal;
+            }
+        }
+        return response()->json([
+            'ventas_totales' => $ventasTotales,
+            'ganancia_total' => $gananciaTotal,
+            'productos_vendidos' => $productosVendidos
+        ]);
+    }
+    public function topProductosVendidosPorFecha($fecha) {
+        $fechaInicio = \Carbon\Carbon::parse($fecha)->startOfDay();
+        $fechaFin = \Carbon\Carbon::parse($fecha)->endOfDay();
+        $facturas = Factura::whereBetween('created_at', [$fechaInicio, $fechaFin])->get();
+
+        $productos = [];
+        foreach($facturas as $factura){
+            $ventas = Ventas::where('factura_id', $factura->id)->get();
+            foreach ($ventas as $venta) {
+                $producto = Product::find($venta->product_id);
+                if (!$producto) continue;
+                $key = $producto->id;
+                $cantidadTotal = $venta->cantidad_unidades + ($venta->cantidad_bultos * $producto->cantidad_por_bulto);
+                $totalRecaudado = $cantidadTotal * $producto->precio_venta_unitario;
+                if (!isset($productos[$key])) {
+                    $productos[$key] = [
+                        'nombre' => $producto->nombre,
+                        'codigo' => $producto->codigo,
+                        'cantidad_vendida' => 0,
+                        'total_recaudado' => 0
+                    ];
+                }
+                $productos[$key]['cantidad_vendida'] += $cantidadTotal;
+                $productos[$key]['total_recaudado'] += $totalRecaudado;
+            }
+        }
+        // Ordenar por cantidad_vendida desc
+        usort($productos, function($a, $b) {
+            return $b['cantidad_vendida'] <=> $a['cantidad_vendida'];
+        });
+        return response()->json(array_values($productos));
+    }
 }
