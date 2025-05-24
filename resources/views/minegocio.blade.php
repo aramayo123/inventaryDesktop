@@ -101,14 +101,23 @@
             });
         });
 
-const pasos = [
-  'Esperando...',
-  'Consultando GitHub...',
-  'Descargando actualización...',
-  'Descomprimiendo...',
-  'Reemplazando archivos...',
-  '¡Actualización completada!'
-];
+let pollingInterval = null;
+function actualizarBarraProgreso() {
+  fetch('/update-progress')
+    .then(r => r.json())
+    .then(data => {
+      const barra = document.getElementById('barra-progreso');
+      const mensaje = document.getElementById('mensaje-progreso');
+      let percent = data.percent || 0;
+      barra.style.width = percent + '%';
+      barra.innerText = percent + '%';
+      mensaje.innerText = data.msg;
+      if (data.step === 8 || data.step === -1) {
+        clearInterval(pollingInterval);
+        document.getElementById('btn-actualizar').disabled = false;
+      }
+    });
+}
 document.getElementById('btn-actualizar').onclick = function() {
   this.disabled = true;
   document.getElementById('progreso').style.display = '';
@@ -116,14 +125,16 @@ document.getElementById('btn-actualizar').onclick = function() {
   fetch('/check-updates')
     .then(r => r.json())
     .then(data => {
-      if (data.success) {
-        document.getElementById('mensaje-progreso').innerText = data.message;
-      } else {
-        document.getElementById('mensaje-progreso').innerText = 'Error: ' + data.message;
-      }
+      // Iniciar polling de progreso
+      pollingInterval = setInterval(actualizarBarraProgreso, 2000);
     })
     .catch(err => {
       document.getElementById('mensaje-progreso').innerText = 'Error: ' + err.message;
+      document.getElementById('btn-actualizar').disabled = false;
     });
 };
+// Si el usuario recarga, seguir mostrando el progreso si está en curso
+if (document.getElementById('progreso').style.display !== 'none') {
+  pollingInterval = setInterval(actualizarBarraProgreso, 2000);
+}
 </script>

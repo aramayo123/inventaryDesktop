@@ -24,7 +24,7 @@ class UpdateChecker
     {
         $owner = env('GITHUB_OWNER', 'aramayo123');
         $repo = env('GITHUB_REPO', 'inventaryDesktop');
-        $token = env('GITHUB_TOKEN', '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');
+        $token = env('GITHUB_TOKEN', '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');
 
         logger()->info("Verificando actualizaciones...");
         logger()->info("Versión actual: " . self::CURRENT_VERSION);
@@ -107,8 +107,28 @@ class UpdateChecker
             });
     }
 
+    // Helper para progreso
+    protected function setProgress($step, $msg, $percent = null) {
+        $progress = [
+            'step' => $step,
+            'msg' => $msg,
+            'percent' => $percent
+        ];
+        file_put_contents(storage_path('app/update_progress.json'), json_encode($progress));
+    }
+
+    public function getProgress() {
+        $file = storage_path('app/update_progress.json');
+        if (file_exists($file)) {
+            return json_decode(file_get_contents($file), true);
+        }
+        return ['step' => 0, 'msg' => 'Esperando...', 'percent' => 0];
+    }
+
     public function checkForUpdates()
     {
+        set_time_limit(300);
+        $this->setProgress(1, 'Consultando GitHub...', 5);
         try {
             $response = Http::withHeaders([
                 'User-Agent' => 'InventaryDesktop-Updater'
@@ -126,19 +146,23 @@ class UpdateChecker
                         File::makeDirectory(storage_path('app/tmp_update'), 0755, true);
                     }
 
-                    // Descargar el archivo
+                    $this->setProgress(2, 'Descargando actualización...', 15);
+                    // Descargar el archivo (con timeout largo)
                     $fileContent = Http::withHeaders([
                         'User-Agent' => 'InventaryDesktop-Updater'
-                    ])->get($downloadUrl)->body();
+                    ])->timeout(300)->get($downloadUrl)->body();
 
                     File::put($localZip, $fileContent);
 
+                    $this->setProgress(3, 'Backup de la base de datos...', 30);
                     // Hacer backup de la base de datos
                     $backupFile = $this->backupDatabase();
 
+                    $this->setProgress(4, 'Exportando datos...', 40);
                     // Exportar datos de la vieja base de datos
                     $this->exportDatabaseData();
 
+                    $this->setProgress(5, 'Descomprimiendo actualización...', 60);
                     // Descomprimir el archivo ZIP
                     $zip = new \ZipArchive();
                     if ($zip->open($localZip) === TRUE) {
@@ -149,17 +173,21 @@ class UpdateChecker
                         $zip->extractTo($extractPath);
                         $zip->close();
 
+                        $this->setProgress(6, 'Reemplazando archivos...', 80);
                         // Reemplazar archivos
                         $this->recurse_copy($extractPath, base_path());
 
+                        $this->setProgress(7, 'Importando datos...', 90);
                         // Importar datos a la nueva base de datos
                         $this->importDatabaseData();
 
+                        $this->setProgress(8, '¡Actualización completada!', 100);
                         return [
                             'success' => true,
                             'message' => 'Actualización completada. Archivos reemplazados y datos importados correctamente.'
                         ];
                     } else {
+                        $this->setProgress(-1, 'No se pudo descomprimir el archivo ZIP. Backup restaurado.', 0);
                         // Restaurar backup si falla la descompresión
                         $this->restoreDatabase($backupFile);
                         return [
@@ -170,11 +198,13 @@ class UpdateChecker
                 }
             }
 
+            $this->setProgress(-1, 'No se pudo obtener el release de GitHub', 0);
             return [
                 'success' => false,
                 'message' => 'No se pudo obtener el release de GitHub'
             ];
         } catch (\Exception $e) {
+            $this->setProgress(-1, 'Error: ' . $e->getMessage() . '. Backup restaurado.', 0);
             // Restaurar backup si ocurre cualquier error
             if (isset($backupFile)) {
                 $this->restoreDatabase($backupFile);
