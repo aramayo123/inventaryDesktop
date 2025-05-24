@@ -126,8 +126,27 @@ document.getElementById('btn-actualizar').onclick = function() {
   fetch('/check-updates')
     .then(r => r.json())
     .then(data => {
-      // Iniciar polling de progreso
-      pollingInterval = setInterval(actualizarBarraProgreso, 2000);
+      if (data.progreso && Array.isArray(data.progreso)) {
+        let i = 0;
+        function animarPaso() {
+          if (i < data.progreso.length) {
+            const paso = data.progreso[i];
+            const barra = document.getElementById('barra-progreso');
+            const mensaje = document.getElementById('mensaje-progreso');
+            barra.style.width = (paso.percent || 0) + '%';
+            barra.innerText = (paso.percent || 0) + '%';
+            mensaje.innerText = paso.msg;
+            i++;
+            setTimeout(animarPaso, 800); // animación suave
+          } else {
+            document.getElementById('btn-actualizar').disabled = false;
+          }
+        }
+        animarPaso();
+      } else {
+        document.getElementById('mensaje-progreso').innerText = data.message || 'Error desconocido';
+        document.getElementById('btn-actualizar').disabled = false;
+      }
     })
     .catch(err => {
       document.getElementById('mensaje-progreso').innerText = 'Error: ' + err.message;
