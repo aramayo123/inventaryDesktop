@@ -65,6 +65,8 @@
 - Mejora visual en modales
 - Correcciones en sincronización de listas de productos
 
+### ✅ v2.4
+
 ---
 
 ## 📌 Instalación
