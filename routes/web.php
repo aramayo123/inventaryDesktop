@@ -33,9 +33,26 @@ Route::middleware([CheckLicenseValidity::class])->group(function () {
     Route::get('/facturas/resumen-por-fecha/{fecha}', [FacturaController::class, 'resumenPorFecha']);
     Route::get('/facturas/top-productos-vendidos-por-fecha/{fecha}', [FacturaController::class, 'topProductosVendidosPorFecha']);
     Route::get('/check-updates', function () {
+        try {
+            // Limpiar progreso anterior
+            $progressFile = storage_path('app/update_progress.json');
+            if (file_exists($progressFile)) {
+                unlink($progressFile);
+            }
+            $updateChecker = app(App\Services\UpdateChecker::class);
+            $result = $updateChecker->checkForUpdates();
+            return response()->json($result);
+        } catch (\Throwable $e) {
+            \Log::error('Error en actualización: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Error inesperado: ' . $e->getMessage()
+            ], 500);
+        }
+    });
+    Route::get('/update-progress', function () {
         $updateChecker = app(App\Services\UpdateChecker::class);
-        $result = $updateChecker->checkForUpdates();
-        return response()->json($result);
+        return response()->json($updateChecker->getProgress());
     });
 });
 
