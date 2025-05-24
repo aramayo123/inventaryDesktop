@@ -68,8 +68,9 @@
     </div>
 </div>
 
-<div id="actualizador">
-  <button id="btn-actualizar" class="btn btn-warning">Actualizar ahora</button>
+<div id="actualizador" class="text-center">
+   <h4 class="text-center my-3">Consulta si es que existen nuevas actualizaciones</h4>
+  <button id="btn-actualizar" class="btn btn-primary">Consultar</button>
   <div id="progreso" style="display:none;">
     <div class="progress my-3">
       <div id="barra-progreso" class="progress-bar progress-bar-striped progress-bar-animated" style="width:0%">0%</div>

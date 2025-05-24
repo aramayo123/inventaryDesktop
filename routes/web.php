@@ -16,8 +16,7 @@ Auth::routes([
 Route::middleware([CheckLicenseValidity::class])->group(function () {
     Route::get('/', function () {
         app(UpdateChecker::class)->check();
-        return app()->make(App\Http\Controllers\HomeController::class)->index();
-        
+        return app()->make(App\Http\Controllers\HomeController::class)->index(); // NOTA RECORDAR SSL CERTIFICATE
     })->middleware('auth')->name('home');
 
     Route::get('/productos/buscar', [ProductController::class, 'BuscarProductos']);

@@ -7,6 +7,7 @@ use Native\Laravel\Facades\Shell;
 use Native\Laravel\Facades\Alert;
 use App\Services\DatabaseMigrationService;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Log;
 
 class UpdateChecker
 {
@@ -18,25 +19,28 @@ class UpdateChecker
     }
 
     // Versión actual de la app. Podés poner esto como una constante, o leerlo desde archivo si preferís.
-    const CURRENT_VERSION = '1.0.0';
+    const CURRENT_VERSION = '1.0.5';
 
     public function check()
     {
+        Log::debug("entro a check " );
         $owner = env('GITHUB_OWNER', 'aramayo123');
         $repo = env('GITHUB_REPO', 'inventaryDesktop');
-        $token = env('GITHUB_TOKEN', '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');
+        $token = env('GITHUB_TOKEN', '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');
 
         logger()->info("Verificando actualizaciones...");
         logger()->info("Versión actual: " . self::CURRENT_VERSION);
 
         $url = "https://api.github.com/repos/$owner/$repo/releases/latest";
         logger()->info("Consultando URL: " . $url);
+        Log::alert("Consultando URL: " . $url);
 
         // Consulta GitHub con el token
         $response = Http::withToken($token)->get($url);
 
         if (!$response->successful()) {
             logger()->error("Error al consultar GitHub: " . $response->body());
+            Log::alert("Error al consultar GitHub: " . $response->body());
             return;
         }
 
@@ -47,6 +51,8 @@ class UpdateChecker
 
         logger()->info("Última versión disponible: " . $latestVersion);
         logger()->info("URL del release: " . $releaseUrl);
+        
+        Log::alert("URL del release: " . $releaseUrl);
 
         if (version_compare(self::CURRENT_VERSION, $latestVersion, '<')) {
             logger()->info("Nueva versión disponible. Mostrando diálogo de actualización.");
