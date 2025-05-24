@@ -134,7 +134,8 @@ class UpdateChecker
     public function checkForUpdates()
     {
         set_time_limit(300);
-        $this->setProgress(1, 'Consultando GitHub...', 5);
+        $progreso = [];
+        $progreso[] = ['step' => 1, 'msg' => 'Consultando GitHub...', 'percent' => 5];
         try {
             $response = Http::withHeaders([
                 'User-Agent' => 'InventaryDesktop-Updater'
@@ -142,34 +143,37 @@ class UpdateChecker
 
             if ($response->successful()) {
                 $release = $response->json();
-                if (isset($release['assets'][0]['browser_download_url'])) {
-                    $downloadUrl = $release['assets'][0]['browser_download_url'];
+                $version = ltrim($release['tag_name'], 'v');
+                $asset = null;
+                foreach ($release['assets'] as $a) {
+                    if (strpos($a['name'], $version) !== false) {
+                        $asset = $a;
+                        break;
+                    }
+                }
+                if ($asset) {
+                    $downloadUrl = $asset['browser_download_url'];
                     $filename = basename(parse_url($downloadUrl, PHP_URL_PATH));
                     $localZip = storage_path('app/tmp_update/' . $filename);
 
-                    // Crear directorio temporal si no existe
                     if (!File::exists(storage_path('app/tmp_update'))) {
                         File::makeDirectory(storage_path('app/tmp_update'), 0755, true);
                     }
 
-                    $this->setProgress(2, 'Descargando actualización...', 15);
-                    // Descargar el archivo (con timeout largo)
+                    $progreso[] = ['step' => 2, 'msg' => 'Descargando actualización...', 'percent' => 15];
                     $fileContent = Http::withHeaders([
                         'User-Agent' => 'InventaryDesktop-Updater'
                     ])->timeout(300)->get($downloadUrl)->body();
 
                     File::put($localZip, $fileContent);
 
-                    $this->setProgress(3, 'Backup de la base de datos...', 30);
-                    // Hacer backup de la base de datos
+                    $progreso[] = ['step' => 3, 'msg' => 'Backup de la base de datos...', 'percent' => 30];
                     $backupFile = $this->backupDatabase();
 
-                    $this->setProgress(4, 'Exportando datos...', 40);
-                    // Exportar datos de la vieja base de datos
+                    $progreso[] = ['step' => 4, 'msg' => 'Exportando datos...', 'percent' => 40];
                     $this->exportDatabaseData();
 
-                    $this->setProgress(5, 'Descomprimiendo actualización...', 60);
-                    // Descomprimir el archivo ZIP
+                    $progreso[] = ['step' => 5, 'msg' => 'Descomprimiendo actualización...', 'percent' => 60];
                     $zip = new \ZipArchive();
                     if ($zip->open($localZip) === TRUE) {
                         $extractPath = storage_path('app/tmp_update/extracted');
@@ -179,45 +183,45 @@ class UpdateChecker
                         $zip->extractTo($extractPath);
                         $zip->close();
 
-                        $this->setProgress(6, 'Reemplazando archivos...', 80);
-                        // Reemplazar archivos
+                        $progreso[] = ['step' => 6, 'msg' => 'Reemplazando archivos...', 'percent' => 80];
                         $this->recurse_copy($extractPath, base_path());
 
-                        $this->setProgress(7, 'Importando datos...', 90);
-                        // Importar datos a la nueva base de datos
+                        $progreso[] = ['step' => 7, 'msg' => 'Importando datos...', 'percent' => 90];
                         $this->importDatabaseData();
 
-                        $this->setProgress(8, '¡Actualización completada!', 100);
+                        $progreso[] = ['step' => 8, 'msg' => '¡Actualización completada!', 'percent' => 100];
                         return [
                             'success' => true,
-                            'message' => 'Actualización completada. Archivos reemplazados y datos importados correctamente.'
+                            'message' => 'Actualización completada. Archivos reemplazados y datos importados correctamente.',
+                            'progreso' => $progreso
                         ];
                     } else {
-                        $this->setProgress(-1, 'No se pudo descomprimir el archivo ZIP. Backup restaurado.', 0);
-                        // Restaurar backup si falla la descompresión
+                        $progreso[] = ['step' => -1, 'msg' => 'No se pudo descomprimir el archivo ZIP. Backup restaurado.', 'percent' => 0];
                         $this->restoreDatabase($backupFile);
                         return [
                             'success' => false,
-                            'message' => 'No se pudo descomprimir el archivo ZIP. Backup restaurado.'
+                            'message' => 'No se pudo descomprimir el archivo ZIP. Backup restaurado.',
+                            'progreso' => $progreso
                         ];
                     }
                 }
             }
 
-            $this->setProgress(-1, 'No se pudo obtener el release de GitHub', 0);
+            $progreso[] = ['step' => -1, 'msg' => 'No se pudo obtener el release de GitHub', 'percent' => 0];
             return [
                 'success' => false,
-                'message' => 'No se pudo obtener el release de GitHub'
+                'message' => 'No se pudo obtener el release de GitHub',
+                'progreso' => $progreso
             ];
         } catch (\Exception $e) {
-            $this->setProgress(-1, 'Error: ' . $e->getMessage() . '. Backup restaurado.', 0);
-            // Restaurar backup si ocurre cualquier error
+            $progreso[] = ['step' => -1, 'msg' => 'Error: ' . $e->getMessage() . '. Backup restaurado.', 'percent' => 0];
             if (isset($backupFile)) {
                 $this->restoreDatabase($backupFile);
             }
             return [
                 'success' => false,
-                'message' => 'Error: ' . $e->getMessage() . '. Backup restaurado.'
+                'message' => 'Error: ' . $e->getMessage() . '. Backup restaurado.',
+                'progreso' => $progreso
             ];
         }
     }
