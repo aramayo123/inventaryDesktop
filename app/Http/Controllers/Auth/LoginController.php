@@ -102,8 +102,8 @@ class LoginController extends Controller
             return back()->withErrors(['email' => 'El cliente no existe'])->withInput();
 
         }
-        $urlAuth = env('URL_AUTH_CLIENT', 'http://127.0.0.1:8001/clientes/api/v1/auth-user');
-        $urlUpdateLast = env('URL_UPDATE_CLIENT', 'http://127.0.0.1:8001/clientes/api/v1/update-last-used');
+        $urlAuth = env('URL_AUTH_CLIENT', 'https://shop.derrochandofacha.com.ar/public/clientes/api/v1/auth-user');
+        $urlUpdateLast = env('URL_UPDATE_CLIENT', 'https://shop.derrochandofacha.com.ar/public/clientes/api/v1/update-last-used');
 
         if (!$urlAuth || !$urlUpdateLast) {
             return back()->withErrors(['email' => 'Configuración del servidor incompleta. Faltan URLs de conexión.'])->withInput();
