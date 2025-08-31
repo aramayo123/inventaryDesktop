@@ -66,7 +66,33 @@
 - Correcciones en sincronización de listas de productos
 
 ### ✅ v2.4
-
+- Aviso de productos con bajo stock de bultos
+- Tabla de productos con bajo stock por bulto
+- Monitoreo en tiempo real del inventario
+- Alertas visuales para stock mínimo
+- Resumen de ventas y ganancias por período
+- Selección de rango de días (1-30 días)
+- Muestra:
+- - Ventas totales
+- - Ganancia total
+- - Cantidad de productos vendidos
+- Lista de productos más vendidos
+- Filtrado por rango de días
+- Muestra:
+- - Nombre del producto
+- - Código
+- - Cantidad vendida
+- - Total recaudado
+- Selector de fecha específica
+- Resumen detallado por día
+- Muestra:
+- - Ventas totales del día
+- - Ganancia del día
+- - Productos vendidos en el día
+- Sistema de Actualizaciones
+- - Botón para consultar actualizaciones
+- - Barra de progreso de actualización
+- - Mensajes de estado de actualización
 ---
 
 ## 📌 Instalación
