@@ -247,7 +247,7 @@
         fetch(`/facturas/facturas-hoy`)
             .then(response => response.json())
             .then(data => {
-                console.log(data);
+                //console.log(data);
                 if (!data.length) return;
 
                 let ganancia = 0;

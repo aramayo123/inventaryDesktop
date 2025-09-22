@@ -26,7 +26,7 @@ class UpdateChecker
         Log::debug("entro a check " );
         $owner = env('GITHUB_OWNER', 'aramayo123');
         $repo = env('GITHUB_REPO', 'inventaryDesktop');
-        $token = env('GITHUB_TOKEN', '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');
+        $token = env('GITHUB_TOKEN', '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');
 
         logger()->info("Verificando actualizaciones...");
         logger()->info("Versión actual: " . self::CURRENT_VERSION);
@@ -115,117 +115,114 @@ class UpdateChecker
 
     // Helper para progreso
     protected function setProgress($step, $msg, $percent = null) {
+        $filePath = storage_path('app/update_progress.json');
+
+        // Crear carpeta si no existe
+        $dir = dirname($filePath);
+        if (!File::exists($dir)) {
+            File::makeDirectory($dir, 0755, true);
+        }
+
         $progress = [
             'step' => $step,
             'msg' => $msg,
             'percent' => $percent
         ];
-        file_put_contents(storage_path('app/update_progress.json'), json_encode($progress));
+
+        file_put_contents($filePath, json_encode($progress));
     }
 
-    public function getProgress() {
+    public static function getProgress() {
         $file = storage_path('app/update_progress.json');
+        //Log::info("paso por getprogress $file");
         if (file_exists($file)) {
             return json_decode(file_get_contents($file), true);
         }
         return ['step' => 0, 'msg' => 'Esperando...', 'percent' => 0];
     }
-
     public function checkForUpdates()
     {
+        ini_set('memory_limit', '512M');
         set_time_limit(300);
-        $progreso = [];
-        $progreso[] = ['step' => 1, 'msg' => 'Consultando GitHub...', 'percent' => 5];
+        $backupFile = null;
+
         try {
-            $response = Http::withHeaders([
-                'User-Agent' => 'InventaryDesktop-Updater'
-            ])->get('https://api.github.com/repos/aramayo123/inventaryDesktop/releases/latest');
+            // Paso 1: Consultando GitHub
+            $this->setProgress(1, 'Consultando GitHub...', 5);
+            $response = Http::get('https://api.github.com/repos/aramayo123/inventaryDesktop/releases/latest');
 
-            if ($response->successful()) {
-                $release = $response->json();
-                $version = ltrim($release['tag_name'], 'v');
-                $asset = null;
-                foreach ($release['assets'] as $a) {
-                    if (strpos($a['name'], $version) !== false) {
-                        $asset = $a;
-                        break;
-                    }
-                }
-                if ($asset) {
-                    $downloadUrl = $asset['browser_download_url'];
-                    $filename = basename(parse_url($downloadUrl, PHP_URL_PATH));
-                    $localZip = storage_path('app/tmp_update/' . $filename);
-
-                    if (!File::exists(storage_path('app/tmp_update'))) {
-                        File::makeDirectory(storage_path('app/tmp_update'), 0755, true);
-                    }
-
-                    $progreso[] = ['step' => 2, 'msg' => 'Descargando actualización...', 'percent' => 15];
-                    $fileContent = Http::withHeaders([
-                        'User-Agent' => 'InventaryDesktop-Updater'
-                    ])->timeout(300)->get($downloadUrl)->body();
-
-                    File::put($localZip, $fileContent);
-
-                    $progreso[] = ['step' => 3, 'msg' => 'Backup de la base de datos...', 'percent' => 30];
-                    $backupFile = $this->backupDatabase();
-
-                    $progreso[] = ['step' => 4, 'msg' => 'Exportando datos...', 'percent' => 40];
-                    $this->exportDatabaseData();
-
-                    $progreso[] = ['step' => 5, 'msg' => 'Descomprimiendo actualización...', 'percent' => 60];
-                    $zip = new \ZipArchive();
-                    if ($zip->open($localZip) === TRUE) {
-                        $extractPath = storage_path('app/tmp_update/extracted');
-                        if (!File::exists($extractPath)) {
-                            File::makeDirectory($extractPath, 0755, true);
-                        }
-                        $zip->extractTo($extractPath);
-                        $zip->close();
-
-                        $progreso[] = ['step' => 6, 'msg' => 'Reemplazando archivos...', 'percent' => 80];
-                        $this->recurse_copy($extractPath, base_path());
-
-                        $progreso[] = ['step' => 7, 'msg' => 'Importando datos...', 'percent' => 90];
-                        $this->importDatabaseData();
-
-                        $progreso[] = ['step' => 8, 'msg' => '¡Actualización completada!', 'percent' => 100];
-                        return [
-                            'success' => true,
-                            'message' => 'Actualización completada. Archivos reemplazados y datos importados correctamente.',
-                            'progreso' => $progreso
-                        ];
-                    } else {
-                        $progreso[] = ['step' => -1, 'msg' => 'No se pudo descomprimir el archivo ZIP. Backup restaurado.', 'percent' => 0];
-                        $this->restoreDatabase($backupFile);
-                        return [
-                            'success' => false,
-                            'message' => 'No se pudo descomprimir el archivo ZIP. Backup restaurado.',
-                            'progreso' => $progreso
-                        ];
-                    }
-                }
+            if (!$response->successful()) {
+                $this->setProgress(-1, 'No se pudo obtener el release de GitHub', 0);
+                return ['success' => false, 'message' => 'No se pudo obtener el release de GitHub'];
             }
 
-            $progreso[] = ['step' => -1, 'msg' => 'No se pudo obtener el release de GitHub', 'percent' => 0];
-            return [
-                'success' => false,
-                'message' => 'No se pudo obtener el release de GitHub',
-                'progreso' => $progreso
-            ];
+            $release = $response->json();
+            if (empty($release['assets'])) {
+                $this->setProgress(-1, 'No se encontró ningún archivo en el release', 0);
+                return ['success' => false, 'message' => 'No se encontró ningún archivo en el release'];
+            }
+
+            // Paso 2: Descargar el ZIP
+            $this->setProgress(2, 'Descargando actualización...', 10);
+            $asset = $release['assets'][0];
+            $downloadUrl = $asset['browser_download_url'];
+            $filename = basename(parse_url($downloadUrl, PHP_URL_PATH));
+            $localZip = storage_path('app/tmp_update/' . $filename);
+
+            if (!File::exists(storage_path('app/tmp_update'))) {
+                File::makeDirectory(storage_path('app/tmp_update'), 0755, true);
+            }
+
+            $fileContent = Http::timeout(300)->get($downloadUrl)->body();
+            File::put($localZip, $fileContent);
+
+            // Paso 3: Crear backup de la base de datos
+            $this->setProgress(3, 'Creando backup de la base de datos...', 20);
+            $backupFile = $this->backupDatabase();
+
+            // Paso 4: Exportar datos de la base
+            $this->setProgress(4, 'Exportando datos de la base de datos...', 30);
+            $this->exportDatabaseData();
+
+            // Paso 5: Descomprimir ZIP
+            $this->setProgress(5, 'Descomprimiendo actualización...', 50);
+            $zip = new \ZipArchive();
+            if ($zip->open($localZip) !== TRUE) {
+                $this->setProgress(-1, 'No se pudo descomprimir el ZIP. Backup restaurado.', 0);
+                $this->restoreDatabase($backupFile);
+                return ['success' => false, 'message' => 'No se pudo descomprimir el ZIP'];
+            }
+
+            $extractPath = storage_path('app/tmp_update/extracted');
+            if (!File::exists($extractPath)) {
+                File::makeDirectory($extractPath, 0755, true);
+            }
+
+            $zip->extractTo($extractPath);
+            $zip->close();
+
+            // Paso 6: Reemplazar solo resources/app
+            $this->setProgress(6, 'Reemplazando archivos del sistema...', 70);
+            $appFromZip = $extractPath . '/dist/win-unpacked/resources/app.asar.unpacked/resources/app';
+            $destProject = base_path();
+            $this->recurse_copy($appFromZip, $destProject);
+
+            // Paso 7: Importar datos de la base
+            //$this->setProgress(7, 'Importando datos a la base...', 90);
+            //$this->importDatabaseData();
+
+            // Paso final
+            $this->setProgress(8, '¡Actualización completada!', 100);
+            return ['success' => true, 'message' => 'Actualización completada'];
+
         } catch (\Exception $e) {
-            $progreso[] = ['step' => -1, 'msg' => 'Error: ' . $e->getMessage() . '. Backup restaurado.', 'percent' => 0];
-            if (isset($backupFile)) {
+            if ($backupFile) {
                 $this->restoreDatabase($backupFile);
             }
-            return [
-                'success' => false,
-                'message' => 'Error: ' . $e->getMessage() . '. Backup restaurado.',
-                'progreso' => $progreso
-            ];
+            $this->setProgress(-1, 'Error: ' . $e->getMessage() . '. Backup restaurado.', 0);
+            return ['success' => false, 'message' => 'Error: ' . $e->getMessage()];
         }
     }
-
     protected function backupDatabase()
     {
         $backupPath = storage_path('app/backups');
@@ -274,7 +271,40 @@ class UpdateChecker
             }
         }
     }
+    /*
+    protected function recurse_copy($src, $dst, $exclude = ['node_modules', 'vendor'])
+    {
+        // Si la carpeta actual está excluida, salimos
+        foreach ($exclude as $skip) {
+            if (str_contains($src, DIRECTORY_SEPARATOR . $skip)) {
+                return;
+            }
+        }
 
+        $dir = opendir($src);
+        @mkdir($dst, 0777, true);
+
+        while (false !== ($file = readdir($dir))) {
+            if ($file != '.' && $file != '..') {
+                $srcPath = $src . '/' . $file;
+                $dstPath = $dst . '/' . $file;
+
+                // Ignorar también por nombre exacto de carpeta en este nivel
+                if (in_array($file, $exclude, true)) {
+                    continue;
+                }
+
+                if (is_dir($srcPath)) {
+                    $this->recurse_copy($srcPath, $dstPath, $exclude);
+                } else {
+                    copy($srcPath, $dstPath);
+                }
+            }
+        }
+        closedir($dir);
+    }
+    */
+    
     protected function recurse_copy($src, $dst)
     {
         $dir = opendir($src);
@@ -290,6 +320,7 @@ class UpdateChecker
         }
         closedir($dir);
     }
+    
 
     protected function restoreDatabase($backupFile)
     {
