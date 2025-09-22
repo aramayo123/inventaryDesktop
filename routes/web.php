@@ -6,6 +6,8 @@ use App\Http\Controllers\VentasController;
 use App\Http\Controllers\FacturaController;
 use App\Http\Middleware\CheckLicenseValidity;
 use App\Services\UpdateChecker;
+use Illuminate\Support\Facades\Log;
+use App\Jobs\CheckUpdatesJob;
 
 Auth::routes([
     'register' => false, // Deshabilita el registro
@@ -15,9 +17,10 @@ Auth::routes([
 
 Route::middleware([CheckLicenseValidity::class])->group(function () {
     Route::get('/', function () {
-        app(UpdateChecker::class)->check();
+        //app(UpdateChecker::class)->check();
         return app()->make(App\Http\Controllers\HomeController::class)->index(); // NOTA RECORDAR SSL CERTIFICATE
     })->middleware('auth')->name('home');
+    
 
     Route::get('/productos/buscar', [ProductController::class, 'BuscarProductos']);
     Route::post('/productos/{id}/actualizar-campo', [ProductController::class, 'actualizarCampo']);
@@ -31,27 +34,14 @@ Route::middleware([CheckLicenseValidity::class])->group(function () {
     Route::get('/facturas/top-productos-vendidos/{dias}', [FacturaController::class, 'topProductosVendidosPorDias']);
     Route::get('/facturas/resumen-por-fecha/{fecha}', [FacturaController::class, 'resumenPorFecha']);
     Route::get('/facturas/top-productos-vendidos-por-fecha/{fecha}', [FacturaController::class, 'topProductosVendidosPorFecha']);
-    Route::get('/check-updates', function () {
-        try {
-            // Limpiar progreso anterior
-            $progressFile = storage_path('app/update_progress.json');
-            if (file_exists($progressFile)) {
-                unlink($progressFile);
-            }
-            $updateChecker = app(App\Services\UpdateChecker::class);
-            $result = $updateChecker->checkForUpdates();
-            return response()->json($result);
-        } catch (\Throwable $e) {
-            \Log::error('Error en actualización: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Error inesperado: ' . $e->getMessage()
-            ], 500);
-        }
+    Route::get('/check-updates', function(UpdateChecker $updateChecker) {
+        CheckUpdatesJob::dispatch($updateChecker); // dispara el job en segundo plano
+        return response()->json(['status' => 'iniciado']);
     });
     Route::get('/update-progress', function () {
-        $updateChecker = app(App\Services\UpdateChecker::class);
-        return response()->json($updateChecker->getProgress());
+        //Log::info("llega a ruta /update-progress en rotutes.php");
+        $progress = \App\Services\UpdateChecker::getProgress();
+        return response()->json($progress);
     });
 });
 

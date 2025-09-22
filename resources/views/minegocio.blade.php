@@ -103,58 +103,46 @@
         });
 
 let pollingInterval = null;
-function actualizarBarraProgreso() {
-  fetch('/update-progress')
-    .then(r => r.json())
-    .then(data => {
-      const barra = document.getElementById('barra-progreso');
-      const mensaje = document.getElementById('mensaje-progreso');
-      let percent = data.percent || 0;
-      barra.style.width = percent + '%';
-      barra.innerText = percent + '%';
-      mensaje.innerText = data.msg;
-      if (data.step === 8 || data.step === -1) {
-        clearInterval(pollingInterval);
-        document.getElementById('btn-actualizar').disabled = false;
+
+async function actualizarBarraProgreso() {
+  try {
+    const response = await fetch('/update-progress'); // el JSON debe estar accesible
+    const data = await response.json();
+
+    const barra = document.getElementById('barra-progreso');
+    const mensaje = document.getElementById('mensaje-progreso');
+
+    barra.style.width = (data.percent || 0) + '%';
+    barra.innerText = (data.percent || 0) + '%';
+    mensaje.innerText = data.msg;
+
+    // El último paso es 9 según tu UpdateChecker
+    if (data.step === 9 || data.step === -1) {
+      clearInterval(pollingInterval);
+      pollingInterval = null;
+      document.getElementById('btn-actualizar').disabled = false;
+      if(data.step === 9) {
+        mensaje.innerText = '¡Actualización completada!';
+        setTimeout(() => {
+            window.location.reload();
+        }, 1000);
       }
-    });
+    }
+  } catch (err) {
+    console.error("Error leyendo JSON:", err);
+  }
 }
+
 document.getElementById('btn-actualizar').onclick = function() {
   this.disabled = true;
   document.getElementById('progreso').style.display = '';
-  document.getElementById('mensaje-progreso').innerText = 'Consultando actualizaciones...';
-  fetch('/check-updates')
-    .then(r => r.json())
-    .then(data => {
-      if (data.progreso && Array.isArray(data.progreso)) {
-        let i = 0;
-        function animarPaso() {
-          if (i < data.progreso.length) {
-            const paso = data.progreso[i];
-            const barra = document.getElementById('barra-progreso');
-            const mensaje = document.getElementById('mensaje-progreso');
-            barra.style.width = (paso.percent || 0) + '%';
-            barra.innerText = (paso.percent || 0) + '%';
-            mensaje.innerText = paso.msg;
-            i++;
-            setTimeout(animarPaso, 800); // animación suave
-          } else {
-            document.getElementById('btn-actualizar').disabled = false;
-          }
-        }
-        animarPaso();
-      } else {
-        document.getElementById('mensaje-progreso').innerText = data.message || 'Error desconocido';
-        document.getElementById('btn-actualizar').disabled = false;
-      }
-    })
-    .catch(err => {
-      document.getElementById('mensaje-progreso').innerText = 'Error: ' + err.message;
-      document.getElementById('btn-actualizar').disabled = false;
-    });
+
+  // Disparar el job
+  fetch('/check-updates').then(r => r.json()).then(console.log);
+
+  // Empezar a actualizar la barra
+  pollingInterval = setInterval(actualizarBarraProgreso, 1000);
 };
-// Si el usuario recarga, seguir mostrando el progreso si está en curso
-if (document.getElementById('progreso').style.display !== 'none') {
-  pollingInterval = setInterval(actualizarBarraProgreso, 2000);
-}
+
+
 </script>
