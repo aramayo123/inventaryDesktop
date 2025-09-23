@@ -110,9 +110,6 @@ async function actualizarBarraProgreso() {
       document.getElementById('btn-actualizar').disabled = false;
       if(data.step === 8) {
         mensaje.innerText = data.msg;
-        setTimeout(() => {
-            window.location.reload();
-        }, 2500);
       }
     }
   } catch (err) {

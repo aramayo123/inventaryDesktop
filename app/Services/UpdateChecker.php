@@ -121,7 +121,7 @@ class UpdateChecker
             $this->importDatabaseData();
 
             // Paso final
-            $this->setProgress(8, '¡Actualización completada!', 100);
+            $this->setProgress(8, '¡Actualización completada! Por favor cierra y vuelve a abrir la aplicacion', 100);
             return ['success' => true, 'message' => 'Actualización completada'];
 
         } catch (\Exception $e) {

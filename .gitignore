@@ -22,3 +22,4 @@ yarn-error.log
 env
 /app/services/updatechecker.php
 .env
+dist.zip

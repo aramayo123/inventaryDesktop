@@ -70,7 +70,6 @@
         </div>
     </div>
 </div>
-<button onclick="restartApp()">reiniciar</button>
 @if($updateInfo['available'])
 <div id="actualizador" class="text-center">
    <h4 class="text-center my-3">Consulta si es que existen nuevas actualizaciones</h4>
@@ -127,9 +126,6 @@ async function actualizarBarraProgreso() {
       document.getElementById('btn-actualizar').disabled = false;
       if(data.step === 8) {
         mensaje.innerText = data.msg;
-        setTimeout(() => {
-            window.location.reload();
-        }, 2500);
       }
     }
   } catch (err) {
@@ -148,9 +144,5 @@ if(btn_actualizar){
         // Empezar a actualizar la barra
         pollingInterval = setInterval(actualizarBarraProgreso, 1000);
     };
-}
-async function restartApp() {
-    const response = await fetch('/restart');
-    console.log(response);
 }
 </script>
