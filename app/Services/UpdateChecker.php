@@ -11,108 +11,6 @@ use Illuminate\Support\Facades\Log;
 
 class UpdateChecker
 {
-    protected $dbMigrationService;
-
-    public function __construct(DatabaseMigrationService $dbMigrationService)
-    {
-        $this->dbMigrationService = $dbMigrationService;
-    }
-    
-
-    // Versión actual de la app. Podés poner esto como una constante, o leerlo desde archivo si preferís.
-    const CURRENT_VERSION = '2.8';
-
-    public function check()
-    {
-        Log::debug("entro a check " );
-        $owner = env('GITHUB_OWNER', 'aramayo123');
-        $repo = env('GITHUB_REPO', 'inventaryDesktop');
-        $token = env('GITHUB_TOKEN', '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');
-
-        logger()->info("Verificando actualizaciones...");
-        logger()->info("Versión actual: " . self::CURRENT_VERSION);
-
-        $url = "https://api.github.com/repos/$owner/$repo/releases/latest";
-        logger()->info("Consultando URL: " . $url);
-        Log::alert("Consultando URL: " . $url);
-
-        // Consulta GitHub con el token
-        $response = Http::withToken($token)->get($url);
-
-        if (!$response->successful()) {
-            logger()->error("Error al consultar GitHub: " . $response->body());
-            Log::alert("Error al consultar GitHub: " . $response->body());
-            return;
-        }
-
-        $data = $response->json();
-        $latestVersion = ltrim($data['tag_name'], 'v'); // por ejemplo "v1.1.0" → "1.1.0"
-        $releaseUrl = $data['html_url']; // URL al release en GitHub
-        $releaseNotes = $data['body'] ?? 'No hay notas de actualización disponibles.';
-
-        logger()->info("Última versión disponible: " . $latestVersion);
-        logger()->info("URL del release: " . $releaseUrl);
-        
-        Log::alert("URL del release: " . $releaseUrl);
-
-        if (version_compare(self::CURRENT_VERSION, $latestVersion, '<')) {
-            logger()->info("Nueva versión disponible. Mostrando diálogo de actualización.");
-            $this->askUserToUpdate($latestVersion, $releaseUrl, $releaseNotes);
-        } else {
-            logger()->info("No hay nuevas versiones disponibles.");
-        }
-    }
-
-    protected function askUserToUpdate(string $latestVersion, string $url, string $releaseNotes)
-    {
-        $currentVersion = self::CURRENT_VERSION;
-        $detail = "Versión actual: $currentVersion\n" .
-                 "Nueva versión: $latestVersion\n\n" .
-                 "Notas de la actualización:\n" .
-                 $releaseNotes . "\n\n" .
-                 "IMPORTANTE: Se realizará un respaldo automático de su base de datos antes de la actualización.";
-
-        Alert::new()
-            ->title("Actualización disponible")
-            ->type('info')
-            ->detail($detail)
-            ->buttons(['Actualizar ahora', 'Más tarde'])
-            ->defaultId(0)
-            ->show('¿Desea actualizar su programa?', function ($response) use ($url) {
-                if ($response === 0) {
-                    // Crear backup antes de la actualización
-                    $backupFile = $this->dbMigrationService->createBackup();
-                    
-                    if ($backupFile) {
-                        logger()->info("Backup creado exitosamente en: " . $backupFile);
-                        
-                        // Mostrar mensaje de éxito
-                        Alert::new()
-                            ->title("Backup creado")
-                            ->type('success')
-                            ->detail("Se ha creado un respaldo de su base de datos en:\n" . $backupFile)
-                            ->buttons(['Continuar'])
-                            ->show('Backup exitoso', function () use ($url) {
-                                Shell::open($url);
-                            });
-                    } else {
-                        // Mostrar advertencia si no se pudo crear el backup
-                        Alert::new()
-                            ->title("Advertencia")
-                            ->type('warning')
-                            ->detail("No se pudo crear un respaldo de la base de datos.\n¿Desea continuar con la actualización?")
-                            ->buttons(['Continuar', 'Cancelar'])
-                            ->show('Backup fallido', function ($response) use ($url) {
-                                if ($response === 0) {
-                                    Shell::open($url);
-                                }
-                            });
-                    }
-                }
-                // Si elige "Más tarde", simplemente continuamos con la versión actual
-                logger()->info("Usuario eligió continuar con la versión actual.");
-            });
-    }
 
     // Helper para progreso
     protected function setProgress($step, $msg, $percent = null) {
@@ -213,10 +111,14 @@ class UpdateChecker
             $appFromZip = $extractPath . '/dist/win-unpacked/resources/app.asar.unpacked/resources/app';
             $destProject = base_path();
             $this->recurse_copy($appFromZip, $destProject);
-
+            
+            // 🚨 Nuevo paso: Migraciones
+            $this->setProgress(6.5, 'Ejecutando migraciones...', 80);
+            \Artisan::call('migrate', ['--force' => true]);
+            
             // Paso 7: Importar datos de la base
-            //$this->setProgress(7, 'Importando datos a la base...', 90);
-            //$this->importDatabaseData();
+            $this->setProgress(7, 'Importando datos a la base...', 90);
+            $this->importDatabaseData();
 
             // Paso final
             $this->setProgress(8, '¡Actualización completada!', 100);
@@ -271,49 +173,34 @@ class UpdateChecker
         $exportPath = storage_path('app/tmp_update/database_export');
 
         foreach ($tables as $table) {
-            $jsonData = File::get($exportPath . '/' . $table . '.json');
+            $jsonFile = $exportPath . '/' . $table . '.json';
+            if (!File::exists($jsonFile)) {
+                continue; // si no existe el JSON, saltar
+            }
+
+            $jsonData = File::get($jsonFile);
             $data = json_decode($jsonData, true);
+
             foreach ($data as $row) {
-                \DB::table($table)->insert($row);
+                // Llenar columnas nuevas que no existan en el row
+                $columns = \Schema::getColumnListing($table); // todas las columnas actuales de la tabla
+                foreach ($columns as $col) {
+                    if (!array_key_exists($col, $row)) {
+                        $row[$col] = null; // valor por defecto para columnas nuevas
+                    }
+                }
+
+                // Insertar o actualizar según id
+                \DB::table($table)->updateOrInsert(
+                    ['id' => $row['id']],
+                    $row
+                );
             }
         }
     }
-    /*
-    protected function recurse_copy($src, $dst, $exclude = ['node_modules', 'vendor'])
-    {
-        // Si la carpeta actual está excluida, salimos
-        foreach ($exclude as $skip) {
-            if (str_contains($src, DIRECTORY_SEPARATOR . $skip)) {
-                return;
-            }
-        }
-
-        $dir = opendir($src);
-        @mkdir($dst, 0777, true);
-
-        while (false !== ($file = readdir($dir))) {
-            if ($file != '.' && $file != '..') {
-                $srcPath = $src . '/' . $file;
-                $dstPath = $dst . '/' . $file;
-
-                // Ignorar también por nombre exacto de carpeta en este nivel
-                if (in_array($file, $exclude, true)) {
-                    continue;
-                }
-
-                if (is_dir($srcPath)) {
-                    $this->recurse_copy($srcPath, $dstPath, $exclude);
-                } else {
-                    copy($srcPath, $dstPath);
-                }
-            }
-        }
-        closedir($dir);
-    }
-    */
-    
     protected function recurse_copy($src, $dst)
     {
+        // Carpetas o archivos que querés excluir (solo nombres directos)
         $excludes = [
             '.git',
             'node_modules',
@@ -325,32 +212,43 @@ class UpdateChecker
             'tests',
         ];
 
+        // Si no existe el destino, lo creamos
+        if (!File::exists($dst)) {
+            File::makeDirectory($dst, 0755, true);
+        }
+
         $dir = opendir($src);
-        @mkdir($dst);
-
         while (false !== ($file = readdir($dir))) {
-            if ($file != '.' && $file != '..') {
-                $srcPath = $src . '/' . $file;
-                $dstPath = $dst . '/' . $file;
+            if ($file == '.' || $file == '..') {
+                continue;
+            }
 
-                // si en cualquier parte del path aparece una carpeta a excluir → saltar
-                foreach ($excludes as $skip) {
-                    if (str_contains($srcPath, DIRECTORY_SEPARATOR . $skip)) {
-                        continue 2; // saltar al próximo archivo/carpeta
-                    }
+            $srcPath = $src . DIRECTORY_SEPARATOR . $file;
+            $dstPath = $dst . DIRECTORY_SEPARATOR . $file;
+
+            // Excluir solo si el nombre directo está en la lista
+            if (in_array($file, $excludes)) {
+                Log::info("🚫 Excluido: " . realpath($srcPath));
+                continue;
+            }
+
+            if (is_dir($srcPath)) {
+                $this->recurse_copy($srcPath, $dstPath);
+            } else {
+                // Si ya existe el archivo destino, lo eliminamos
+                if (file_exists($dstPath)) {
+                    unlink($dstPath);
                 }
 
-                if (is_dir($srcPath)) {
-                    $this->recurse_copy($srcPath, $dstPath);
+                if (!copy($srcPath, $dstPath)) {
+                    Log::error("❌ Error copiando " . realpath($srcPath) . " -> " . $dstPath);
                 } else {
-                    @copy($srcPath, $dstPath);
+                    Log::info("✅ Copiado: " . realpath($srcPath) . " -> " . realpath($dstPath));
                 }
             }
         }
         closedir($dir);
     }
-    
-
     protected function restoreDatabase($backupFile)
     {
         $command = sprintf(

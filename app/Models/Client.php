@@ -17,6 +17,7 @@ class Client extends Authenticatable
         'secret_hash',
         'firma',
         'last_used_at',
+        'ip_sesion',
     ];
     protected $hidden = [
         'password',

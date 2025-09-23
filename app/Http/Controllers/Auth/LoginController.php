@@ -93,6 +93,12 @@ class LoginController extends Controller
                     return back()->withErrors(['email' => 'Fecha del sistema alterada'])->withInput();
                 }    
 
+                $newip = $this->getClientIp();
+                $ip = $client->ip_sesion;
+                if(!empty($ip) && $newip !== $ip){
+                    return back()->withErrors(['email' => 'Sesion iniciada en otro dispositivo'])->withInput();
+                }
+
                 $client->last_used_at = now();
                 $client->update();
 
@@ -144,6 +150,12 @@ class LoginController extends Controller
                     return back()->withErrors(['email' => 'Fecha del sistema alterada'])->withInput();
                 }    
 
+                $newip = $this->getClientIp();
+                $ip = $client->ip_sesion;
+                if(!empty($ip) && $newip !== $ip){
+                    return back()->withErrors(['email' => 'Sesion iniciada en otro dispositivo'])->withInput();
+                }
+
                 $client->last_used_at = now();
                 $client->update();
 
@@ -171,9 +183,14 @@ class LoginController extends Controller
         if(!Hash::check($password, $data['password'])){
             return back()->withErrors(['password' => 'Contraseña incorrecta'])->withInput();
         }
+        $newip = $this->getClientIp();
+        $ip = $data['ip_sesion'];
+        if(!empty($ip) && $newip !== $ip){
+            return back()->withErrors(['email' => 'Sesion iniciada en otro dispositivo'])->withInput();
+        }
         
         try{
-            $response = Http::get($urlUpdateLast, ['email' => $email]);
+            $response = Http::get($urlUpdateLast, [ 'email' => $email, 'ip_sesion' => $newip ]);
         } catch (\Exception $e) {
             $previous = $e->getPrevious();
             $host = $previous->getRequest()->getUri()->getHost();
@@ -198,6 +215,7 @@ class LoginController extends Controller
             $client->licencia_expires_at = $data['licencia_expires_at'];
             $client->secret_hash = $data['secret_hash'];
             $client->last_used_at = now();
+            $client->ip_sesion = $newip;
             $client->firma = hash('sha256', $data['nombre'] . '|' . $data['email'] . '|' . $data['licencia_expires_at'] . '|' . $data['secret_hash']);
             $client->update();
         }else{
@@ -209,10 +227,84 @@ class LoginController extends Controller
             $client->licencia_expires_at = $data['licencia_expires_at'];
             $client->secret_hash = $data['secret_hash'];
             $client->last_used_at = now();
+            $client->ip_sesion = $newip;
             $client->firma = hash('sha256', $data['nombre'] . '|' . $data['email'] . '|' . $data['licencia_expires_at'] . '|' . $data['secret_hash']);
             $client->save();
         }
         Auth::guard('client')->login($client);
         return redirect()->route('home')->with('success', 'Inicio de sesión descargado exitoso');
+    }
+    public function getClientIp()
+    {
+        $ip = request()->ip(); // IP de la request (puede ser local)
+        
+        // Revisar cabeceras de proxy primero
+        $headers = [
+            'HTTP_CLIENT_IP',
+            'HTTP_X_FORWARDED_FOR',
+            'HTTP_X_FORWARDED',
+            'HTTP_X_CLUSTER_CLIENT_IP',
+            'HTTP_FORWARDED_FOR',
+            'HTTP_FORWARDED',
+            'REMOTE_ADDR'
+        ];
+        foreach ($headers as $key) {
+            if (!empty($_SERVER[$key])) {
+                $ips = explode(',', $_SERVER[$key]);
+                foreach ($ips as $ipAddr) {
+                    $ipAddr = trim($ipAddr);
+                    if (filter_var($ipAddr, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) {
+                        return $ipAddr;
+                    }
+                }
+            }
+        }
+
+        // Si no se obtiene IP pública, usar un servicio externo
+        try {
+            $response = Http::timeout(2)->get('https://api.ipify.org?format=json');
+            if ($response->successful()) {
+                $data = $response->json();
+                if (!empty($data['ip'])) {
+                    return $data['ip'];
+                }
+            }
+        } catch (\Exception $e) {
+            // No se pudo obtener IP pública externa
+        }
+
+        return $ip; // fallback a IP local
+    }
+    public function logout(Request $request)
+    {
+        $user = Auth::user();
+        if ($user) {
+            // Limpiar IP local
+            $user->ip_sesion = "";
+            $user->save();
+
+            // Limpiar IP en la API remota
+            $apiUrl = env('URL_LOGOUT_CLIENT', 'https://shop.derrochandofacha.com.ar/public/clientes/api/v1/update-logout'); // Reemplazá con la URL real de tu API
+            try {
+                $response = Http::get($apiUrl, [
+                    'email' => $user->email
+                ]);
+
+                // Opcional: manejar errores de la API
+                if ($response->failed()) {
+                    \Log::warning('No se pudo limpiar la IP en la API para ' . $user->email);
+                }
+            } catch (\Exception $e) {
+                \Log::error('Error al llamar al endpoint de logout API: ' . $e->getMessage());
+            }
+        }
+
+        // Logout local
+        Auth::logout();
+
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect('/login'); // o la ruta que corresponda
     }
 }

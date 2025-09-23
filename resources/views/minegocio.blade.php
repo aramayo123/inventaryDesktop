@@ -42,6 +42,7 @@
         <div class="card-body">
             <h4 class="card-title fw-bold">{{ Auth::user()->nombre }}</h4>
             <p class="card-subtitle text-muted mb-3">{{ Auth::user()->email }}</p>
+            <p class="card-subtitle text-muted mb-3">Estas utilizando la version <strong>{{ config('app.current_version') }}</strong></p>
             @php
                 use Carbon\Carbon;
 

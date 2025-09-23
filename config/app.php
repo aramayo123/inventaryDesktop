@@ -122,7 +122,5 @@ return [
         'driver' => env('APP_MAINTENANCE_DRIVER', 'file'),
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
-    'current_version' => '2.8',
-
-    
+    'current_version' => '3.3.4',
 ];
