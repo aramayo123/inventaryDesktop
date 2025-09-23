@@ -8,6 +8,8 @@ use App\Http\Middleware\CheckLicenseValidity;
 use App\Services\UpdateChecker;
 use Illuminate\Support\Facades\Log;
 use App\Jobs\CheckUpdatesJob;
+use Native\Laravel\Facades\App;
+use App\Http\Controllers\HomeController;
 
 Auth::routes([
     'register' => false, // Deshabilita el registro
@@ -16,11 +18,11 @@ Auth::routes([
 ]);
 
 Route::middleware([CheckLicenseValidity::class])->group(function () {
-    Route::get('/', function () {
-        //app(UpdateChecker::class)->check();
-        return app()->make(App\Http\Controllers\HomeController::class)->index(); // NOTA RECORDAR SSL CERTIFICATE
-    })->middleware('auth')->name('home');
-    
+    Route::get('/', [HomeController::class, 'index'])->middleware('auth')->name('home');
+    Route::get('/restart', function () {
+        //App::relaunch();
+        return App::version();
+    });
     Route::get('/productos/buscar', [ProductController::class, 'BuscarProductos']);
     Route::post('/productos/{id}/actualizar-campo', [ProductController::class, 'actualizarCampo']);
     Route::resource('productos', ProductController::class);

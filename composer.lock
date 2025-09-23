@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "e9f00fb54fc9d5772c61b32b8ca0c48e",
+    "content-hash": "c87fccd934faa622ac05bc5a7941d93e",
     "packages": [
         {
             "name": "brick/math",
@@ -2265,16 +2265,16 @@
         },
         {
             "name": "nativephp/laravel",
-            "version": "1.0.0",
+            "version": "1.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/NativePHP/laravel.git",
-                "reference": "9e9166d698e55e1877ba1726ba7d25999c85065f"
+                "reference": "6fe208cc271b0a5cae052b05a6970652a1de0872"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/NativePHP/laravel/zipball/9e9166d698e55e1877ba1726ba7d25999c85065f",
-                "reference": "9e9166d698e55e1877ba1726ba7d25999c85065f",
+                "url": "https://api.github.com/repos/NativePHP/laravel/zipball/6fe208cc271b0a5cae052b05a6970652a1de0872",
+                "reference": "6fe208cc271b0a5cae052b05a6970652a1de0872",
                 "shasum": ""
             },
             "require": {
@@ -2301,7 +2301,6 @@
             "extra": {
                 "laravel": {
                     "aliases": {
-                        "App": "Native\\Laravel\\Facades\\App",
                         "Dock": "Native\\Laravel\\Facades\\Dock",
                         "Menu": "Native\\Laravel\\Facades\\Menu",
                         "Shell": "Native\\Laravel\\Facades\\Shell",
@@ -2354,7 +2353,7 @@
             ],
             "support": {
                 "issues": "https://github.com/NativePHP/laravel/issues",
-                "source": "https://github.com/NativePHP/laravel/tree/1.0.0"
+                "source": "https://github.com/NativePHP/laravel/tree/1.1.0"
             },
             "funding": [
                 {
@@ -2366,7 +2365,7 @@
                     "type": "opencollective"
                 }
             ],
-            "time": "2025-04-07T14:52:57+00:00"
+            "time": "2025-05-22T12:43:16+00:00"
         },
         {
             "name": "nativephp/php-bin",

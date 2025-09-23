@@ -1,4 +1,8 @@
-
+@php
+    use App\Services\UpdateChecker;
+    $updateChecker = new UpdateChecker();
+    $updateInfo = $updateChecker->isUpdateAvailable();
+@endphp
 
 <!-- AVISO DE PRODUCTOS CON BAJO STOCK DE BULTOS -->
 <div class="container my-4">
@@ -35,8 +39,6 @@
 @include('negocio._solo_ventas_fecha')
 @include('negocio._top_productos_vendidos_fecha')
 
-
-
 <div class="container d-flex justify-content-center align-items-center">
     <div class="text-center w-100" style="max-width: 400px;">
         <div class="card-body">
@@ -68,7 +70,8 @@
         </div>
     </div>
 </div>
-
+<button onclick="restartApp()">reiniciar</button>
+@if($updateInfo['available'])
 <div id="actualizador" class="text-center">
    <h4 class="text-center my-3">Consulta si es que existen nuevas actualizaciones</h4>
   <button id="btn-actualizar" class="btn btn-primary">Consultar</button>
@@ -79,7 +82,7 @@
     <div id="mensaje-progreso" class="text-center"></div>
   </div>
 </div>
-
+@endif
 <script>
     // Lógica para cargar productos y mostrar avisos/top bajo stock
     fetch('/productos/buscar')
@@ -133,17 +136,21 @@ async function actualizarBarraProgreso() {
     console.error("Error leyendo JSON:", err);
   }
 }
+var btn_actualizar = document.getElementById('btn-actualizar');
+if(btn_actualizar){
+    document.getElementById('btn-actualizar').onclick = function() {
+        this.disabled = true;
+        document.getElementById('progreso').style.display = '';
 
-document.getElementById('btn-actualizar').onclick = function() {
-  this.disabled = true;
-  document.getElementById('progreso').style.display = '';
+        // Disparar el job
+        fetch('/check-updates').then(r => r.json()).then(console.log);
 
-  // Disparar el job
-  fetch('/check-updates').then(r => r.json()).then(console.log);
-
-  // Empezar a actualizar la barra
-  pollingInterval = setInterval(actualizarBarraProgreso, 1000);
-};
-
-
+        // Empezar a actualizar la barra
+        pollingInterval = setInterval(actualizarBarraProgreso, 1000);
+    };
+}
+async function restartApp() {
+    const response = await fetch('/restart');
+    console.log(response);
+}
 </script>

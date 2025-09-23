@@ -261,4 +261,36 @@ class UpdateChecker
 
         exec($command);
     }
+    public function isUpdateAvailable(): array
+    {
+        try {
+            $response = Http::get('https://api.github.com/repos/aramayo123/inventaryDesktop/releases/latest');
+
+            if (!$response->successful()) {
+                return ['available' => false, 'message' => 'No se pudo consultar GitHub'];
+            }
+
+            $release = $response->json();
+            $latestVersion = ltrim($release['tag_name'], 'v');
+            $currentVersion = config('app.current_version');
+
+            if (version_compare($latestVersion, $currentVersion, '>')) {
+                return [
+                    'available' => true,
+                    'current' => $currentVersion,
+                    'latest' => $latestVersion,
+                    'message' => "Hay una nueva versión disponible: $latestVersion"
+                ];
+            }
+
+            return [
+                'available' => false,
+                'current' => $currentVersion,
+                'latest' => $latestVersion,
+                'message' => "Estás en la última versión ($currentVersion)"
+            ];
+        } catch (\Exception $e) {
+            return ['available' => false, 'message' => 'Error consultando la versión: ' . $e->getMessage()];
+        }
+    }
 }
