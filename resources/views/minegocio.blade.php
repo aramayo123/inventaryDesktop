@@ -122,10 +122,10 @@ async function actualizarBarraProgreso() {
       pollingInterval = null;
       document.getElementById('btn-actualizar').disabled = false;
       if(data.step === 8) {
-        mensaje.innerText = '¡Actualización completada!';
+        mensaje.innerText = data.msg;
         setTimeout(() => {
             window.location.reload();
-        }, 1000);
+        }, 2500);
       }
     }
   } catch (err) {

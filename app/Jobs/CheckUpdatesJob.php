@@ -13,16 +13,19 @@ class CheckUpdatesJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    protected $updateChecker;
-
-    public function __construct(UpdateChecker $updateChecker)
+    public function handle(UpdateChecker $updateChecker)
     {
-        $this->updateChecker = $updateChecker;
+        // Laravel inyecta UpdateChecker aquí automáticamente
+        $updateChecker->checkForUpdates();
     }
-
-    public function handle()
+    /*
+    public function failed(\Throwable $exception): void
     {
-        // Llamamos al método que ya actualiza el progreso en update_progress.json
-        $this->updateChecker->checkForUpdates();
+        \Log::error("CheckUpdatesJob falló", [
+            'error' => $exception->getMessage(),
+            'trace' => $exception->getTraceAsString(),
+        ]);
     }
+    */
+    
 }

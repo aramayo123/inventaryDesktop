@@ -21,7 +21,6 @@ Route::middleware([CheckLicenseValidity::class])->group(function () {
         return app()->make(App\Http\Controllers\HomeController::class)->index(); // NOTA RECORDAR SSL CERTIFICATE
     })->middleware('auth')->name('home');
     
-
     Route::get('/productos/buscar', [ProductController::class, 'BuscarProductos']);
     Route::post('/productos/{id}/actualizar-campo', [ProductController::class, 'actualizarCampo']);
     Route::resource('productos', ProductController::class);
@@ -35,9 +34,16 @@ Route::middleware([CheckLicenseValidity::class])->group(function () {
     Route::get('/facturas/resumen-por-fecha/{fecha}', [FacturaController::class, 'resumenPorFecha']);
     Route::get('/facturas/top-productos-vendidos-por-fecha/{fecha}', [FacturaController::class, 'topProductosVendidosPorFecha']);
     Route::get('/check-updates', function(UpdateChecker $updateChecker) {
-        CheckUpdatesJob::dispatch($updateChecker); // dispara el job en segundo plano
+        $file = storage_path('app/update_progress.json');
+
+        // Al iniciar, lo reseteamos/borramos
+        if (File::exists($file)) {
+            File::delete($file);
+        }
+        CheckUpdatesJob::dispatch(); // dispara el job en segundo plano
         return response()->json(['status' => 'iniciado']);
     });
+    
     Route::get('/update-progress', function () {
         //Log::info("llega a ruta /update-progress en rotutes.php");
         $progress = \App\Services\UpdateChecker::getProgress();

@@ -17,9 +17,10 @@ class UpdateChecker
     {
         $this->dbMigrationService = $dbMigrationService;
     }
+    
 
     // Versión actual de la app. Podés poner esto como una constante, o leerlo desde archivo si preferís.
-    const CURRENT_VERSION = '1.0.5';
+    const CURRENT_VERSION = '2.8';
 
     public function check()
     {
@@ -157,9 +158,15 @@ class UpdateChecker
             }
 
             $release = $response->json();
+            $newVersion = ltrim($release['tag_name'], 'v'); // Ej: "v2.9" → "2.9"
+            $currentVersion = config('app.current_version');
             if (empty($release['assets'])) {
                 $this->setProgress(-1, 'No se encontró ningún archivo en el release', 0);
                 return ['success' => false, 'message' => 'No se encontró ningún archivo en el release'];
+            }
+            if (version_compare($newVersion, $currentVersion, '<=')) {
+                $this->setProgress(8, "Ya estás en la última versión ($currentVersion)", 100);
+                return ['success' => false, 'message' => "Ya estás en la última versión ($currentVersion)"];
             }
 
             // Paso 2: Descargar el ZIP
