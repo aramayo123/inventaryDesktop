@@ -13,8 +13,8 @@ class Kernel extends ConsoleKernel
      * @var array
      */
     protected $commands = [
-        \App\Console\Commands\UpdateSystem::class, 
-        \App\Console\Commands\RunUpdateChecker::class,
+        //\App\Console\Commands\UpdateSystem::class, 
+        //\App\Console\Commands\RunUpdateChecker::class,
     ];
 
     /**
