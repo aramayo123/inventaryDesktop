@@ -307,14 +307,37 @@ class UpdateChecker
     
     protected function recurse_copy($src, $dst)
     {
+        $excludes = [
+            '.git',
+            'node_modules',
+            'vendor',
+            '.DS_Store',
+            'Thumbs.db',
+            'bootstrap',
+            'public',
+            'storage',
+            'tests',
+        ];
+
         $dir = opendir($src);
         @mkdir($dst);
+
         while (false !== ($file = readdir($dir))) {
-            if (($file != '.') && ($file != '..')) {
-                if (is_dir($src . '/' . $file)) {
-                    $this->recurse_copy($src . '/' . $file, $dst . '/' . $file);
+            if ($file != '.' && $file != '..') {
+                $srcPath = $src . '/' . $file;
+                $dstPath = $dst . '/' . $file;
+
+                // si en cualquier parte del path aparece una carpeta a excluir → saltar
+                foreach ($excludes as $skip) {
+                    if (str_contains($srcPath, DIRECTORY_SEPARATOR . $skip)) {
+                        continue 2; // saltar al próximo archivo/carpeta
+                    }
+                }
+
+                if (is_dir($srcPath)) {
+                    $this->recurse_copy($srcPath, $dstPath);
                 } else {
-                    copy($src . '/' . $file, $dst . '/' . $file);
+                    @copy($srcPath, $dstPath);
                 }
             }
         }

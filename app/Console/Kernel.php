@@ -39,6 +39,13 @@ class Kernel extends ConsoleKernel
     {
         $this->load(__DIR__.'/Commands');
 
+        $this->app->booted(function () {
+            $this->commands = array_filter(
+                $this->commands,
+                fn ($command) => $command !== \Illuminate\Foundation\Console\StorageLinkCommand::class
+            );
+        });
+
         require base_path('routes/console.php');
     }
 } 

@@ -116,12 +116,12 @@ async function actualizarBarraProgreso() {
     barra.innerText = (data.percent || 0) + '%';
     mensaje.innerText = data.msg;
 
-    // El último paso es 9 según tu UpdateChecker
-    if (data.step === 9 || data.step === -1) {
+    // El último paso es 8 según tu UpdateChecker
+    if (data.step === 8 || data.step === -1) {
       clearInterval(pollingInterval);
       pollingInterval = null;
       document.getElementById('btn-actualizar').disabled = false;
-      if(data.step === 9) {
+      if(data.step === 8) {
         mensaje.innerText = '¡Actualización completada!';
         setTimeout(() => {
             window.location.reload();
