@@ -321,7 +321,6 @@ class UpdateChecker
             '.DS_Store',
             'Thumbs.db',
             'bootstrap',
-            'public',
             'storage',
             'tests',
         ];
