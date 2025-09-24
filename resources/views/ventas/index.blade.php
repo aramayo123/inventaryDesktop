@@ -147,40 +147,54 @@
         resultsDiv.classList.toggle('d-none', matches.length === 0);
     });
 
+    function formatearNumero(valor) {
+        // Normalizar la entrada: reemplazar coma por punto
+        if (typeof valor === 'string') {
+            valor = valor.replace(',', '.');
+        }
+
+        // Convertir a número
+        let numero = parseFloat(valor);
+
+        // Si no es número válido, devolver cadena vacía
+        if (isNaN(numero)) return '';
+
+        // Formatear solo como número (sin $ ni ARS)
+        return new Intl.NumberFormat('es-AR', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        }).format(numero);
+    }
+
     function AgregarCarrito(productId) {
         const producto = products.find(p => p.id === productId);
         if (!producto) return;
-
-        if (addedProducts.includes(producto)) {
-            return; // Ya agregado
-        }
+        if (addedProducts.includes(producto)) return;
 
         addedProducts.push(producto);
-        //console.log(addedProducts);
 
         const row = document.createElement('tr');
         row.classList.add('fade-in');
 
         const precioVenta = parseFloat(producto.precio_venta_unitario);
-        const precioVentaFormateado = precioVenta.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' }).replace('¤', '').replace(',', '.');
-        //console.log(precioVentaFormateado);
+        const precioVentaFormateado = formatearNumero(precioVenta);
+
         row.innerHTML = `
-          <td>${producto.nombre}</td>
-          <td class="text-center">
-              <input type="number" class="form-control form-control-sm cantidad" name="cantidad" id="cantidad-${producto.id}" value="1" min="1" style="width:80px; margin:auto;">
-          </td>
-          <td class="text-center" id="precio-${producto.id}">${precioVentaFormateado}</td>
-          <td class="text-center subtotal" id="subtotal-${producto.id}">${precioVentaFormateado}</td>
-          <td class="text-center" data-product="${producto.id}">
-              <button class="btn btn-danger btn-sm eliminar-btn">Eliminar</button>
-          </td>
-      `;
+      <td>${producto.nombre}</td>
+      <td class="text-center">
+          <input type="number" class="form-control form-control-sm cantidad" 
+                 name="cantidad" id="cantidad-${producto.id}" value="1" min="1" 
+                 style="width:80px; margin:auto;">
+      </td>
+      <td class="text-center" id="precio-${producto.id}">${precioVentaFormateado}</td>
+      <td class="text-center subtotal" id="subtotal-${producto.id}">${precioVentaFormateado}</td>
+      <td class="text-center" data-product="${producto.id}">
+          <button class="btn btn-danger btn-sm eliminar-btn">Eliminar</button>
+      </td>
+    `;
 
         tablaProductos.appendChild(row);
-
         actualizarTotales();
-
-        // Reset input y resultados
         input.value = '';
         resultsDiv.classList.add('d-none');
     }
@@ -211,22 +225,19 @@
 
     function actualizarSubtotal(idProducto) {
         const cantidadInput = document.getElementById(`cantidad-${idProducto}`);
-        const precioText = document.getElementById(`precio-${idProducto}`).innerText.replace('$', '').replace(',', '');
+        const precioUnitarioText = document.getElementById(`precio-${idProducto}`).textContent;
 
         const cantidad = parseInt(cantidadInput.value) || 0;
-        const precioUnitario = parseFloat(precioText) || 0;
+        const precioUnitario = parseFloat(precioUnitarioText.replace(/\./g, '').replace(',', '.')) || 0;
 
         const nuevoSubtotal = cantidad * precioUnitario;
 
         const subtotalTd = document.getElementById(`subtotal-${idProducto}`);
-        subtotalTd.innerText = `$${nuevoSubtotal.toFixed(2)}`;
+        subtotalTd.textContent = formatearNumero(nuevoSubtotal);
 
-        actualizarPrecioTotal(); // También actualizamos el total general
-        actualizarTotales(); // Actualizamos los totales de la venta
+        actualizarTotales();
         subtotalTd.classList.add('bg-warning', 'text-dark');
-        setTimeout(() => {
-            subtotalTd.classList.remove('bg-warning', 'text-dark');
-        }, 300);
+        setTimeout(() => subtotalTd.classList.remove('bg-warning', 'text-dark'), 300);
     }
 
     function actualizarPrecioTotal() {
@@ -245,12 +256,14 @@
             const product = addedProducts.find(p => p.id == idProducto);
             if (product) {
                 const cantidad = parseInt(e.target.value) || 0;
-                if (cantidad > product.cantidad_unidades + (product.cantidad_bultos * product.cantidad_por_bulto)) {
-                    e.target.value = product.cantidad_unidades + (product.cantidad_bultos * product.cantidad_por_bulto);
+                if (cantidad > product.cantidad_unidades + (product.cantidad_bultos * product
+                        .cantidad_por_bulto)) {
+                    e.target.value = product.cantidad_unidades + (product.cantidad_bultos * product
+                        .cantidad_por_bulto);
                     Swal.fire({
                         position: "top-center",
                         icon: "error",
-                        title: "No hay suficiente stock del producto " + product.nombre+".",
+                        title: "No hay suficiente stock del producto " + product.nombre + ".",
                         showConfirmButton: false,
                         timer: 1500
                     });
@@ -266,12 +279,14 @@
             const product = addedProducts.find(p => p.id == idProducto);
             if (product) {
                 const cantidad = parseInt(e.target.value) || 0;
-                if (cantidad > product.cantidad_unidades + (product.cantidad_bultos * product.cantidad_por_bulto)) {
-                    e.target.value = product.cantidad_unidades + (product.cantidad_bultos * product.cantidad_por_bulto);
+                if (cantidad > product.cantidad_unidades + (product.cantidad_bultos * product
+                        .cantidad_por_bulto)) {
+                    e.target.value = product.cantidad_unidades + (product.cantidad_bultos * product
+                        .cantidad_por_bulto);
                     Swal.fire({
                         position: "top-center",
                         icon: "error",
-                        title: "No hay suficiente stock del producto " + product.nombre+".",
+                        title: "No hay suficiente stock del producto " + product.nombre + ".",
                         showConfirmButton: false,
                         timer: 1500
                     });
@@ -289,19 +304,15 @@
 
         document.querySelectorAll('#tablaProductos tr').forEach(tr => {
             const cantidadInput = tr.querySelector('.cantidad');
-            const precioUnitario =  parseFloat(tr.children[2].textContent
-                .replace('$', '') // Elimina el símbolo de dólar
-                .replace('.', '') // Elimina el punto de miles
-                .replace(',', '.') // Cambia la coma por un punto decimal
-            ) || 0;
+            const precioUnitarioText = tr.children[2].textContent;
+            const precioUnitario = parseFloat(precioUnitarioText.replace(/\./g, '').replace(',', '.')) || 0;
 
             const cantidad = parseInt(cantidadInput?.value || 0);
             const subtotalCell = tr.querySelector('.subtotal');
 
             if (cantidad > 0 && subtotalCell) {
                 const subtotal = cantidad * precioUnitario;
-                const subTotalFormateado = subtotal.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' }).replace('¤', '').replace(',', '.');
-                subtotalCell.textContent = `${subTotalFormateado}`;
+                subtotalCell.textContent = formatearNumero(subtotal);
 
                 cantidadTotal += cantidad;
                 productosDiferentes++;
@@ -309,10 +320,9 @@
             }
         });
 
-        const precioTotalFormateado = precioTotal.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' }).replace('¤', '').replace(',', '.');
         document.getElementById('cantidadProductos').textContent = cantidadTotal;
         document.getElementById('productosDiferentes').textContent = productosDiferentes;
-        document.getElementById('precioTotal').textContent = `${precioTotalFormateado}`;
+        document.getElementById('precioTotal').textContent = formatearNumero(precioTotal);
     }
 
 
@@ -335,13 +345,15 @@
         }));
 
         fetch('/ventas/registrar-ventas', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-            },
-            body: JSON.stringify({ ProductosFinales })
-        })
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    ProductosFinales
+                })
+            })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
@@ -352,10 +364,10 @@
                         showConfirmButton: false,
                         timer: 1500
                     });
-                    setTimeout(function () {
+                    setTimeout(function() {
                         location.reload();
-                    }, 1500); 
-                    
+                    }, 1500);
+
                 } else {
                     Swal.fire({
                         position: "top-center",

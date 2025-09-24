@@ -28,7 +28,7 @@
     </div>
 
     <!-- Tabla del ticket -->
-    <div class="table-responsive">
+    <div class="table-responsive" style="max-height: 400px;">
         <table class="table table-bordered table-hover align-middle">
             <thead class="table-light">
                 <tr>
@@ -67,6 +67,23 @@
 
 
 <script>
+    function formatearNumero(valor, conSimbolo = true) {
+        if (isNaN(valor)) return '0,00';
+
+        if (conSimbolo) {
+            return new Intl.NumberFormat('es-AR', {
+                style: 'currency',
+                currency: 'ARS',
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }).format(valor);
+        } else {
+            return new Intl.NumberFormat('es-AR', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }).format(valor);
+        }
+    }
     const facturas = @json($facturas);
 
     const tablaVentas = document.getElementById('tablaVentas');
@@ -76,11 +93,12 @@
     const productosvendidos = document.getElementById('productosvendidos');
 
     function ActualizarFacturas() {
-        facturas.forEach(factura => {
+
+        const facturasOrdenadas = facturas.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        facturasOrdenadas.forEach(factura => {
             const row = document.createElement('tr');
             row.classList.add('fade-in');
-            const totalFormat = factura.total_venta.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' }).replace('¤', '').replace(',', '.');
-               
+            const totalFormat = formatearNumero(factura.total_venta, true);
             row.innerHTML = `
                 <td>${factura.cliente}</td>
                 <td class="text-center">${ factura.cantidad_productos }</td>
@@ -144,7 +162,7 @@
                 })
                 .catch(error => console.error('Error:', error));
             //actualizarTotales();
-        } 
+        }
     });
     document.addEventListener('DOMContentLoaded', () => {
         ActualizarFacturas();
@@ -183,8 +201,7 @@
                         totalVenta += parseFloat(venta.total_venta);
                         totalBultos += (venta.cantidad_bultos);
 
-                        const totalFormat = venta.total_venta.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' }).replace('¤', '').replace(',', '.');
-             
+                        const totalFormat = formatearNumero(venta.total_venta, true);
                         html += `
                         <tr>
                             <td>${venta.producto_nombre}</td>
@@ -194,9 +211,7 @@
                             <td>${formatFecha(venta.fecha)}</td>
                         </tr>`;
                     });
-
-                    const totalFormatTo = totalVenta.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' }).replace('¤', '').replace(',', '.');
-
+                    const totalFormatTo = formatearNumero(totalVenta, true);
                     html += `
                     </tbody>
                     <tfoot class="table-light fw-bold">
@@ -240,7 +255,7 @@
         return new Intl.DateTimeFormat('es-ES', opciones).format(date);
     }
 
-    function ActualizarCarts(){
+    function ActualizarCarts() {
         //ventasdehoy
         //gananciadehoy
         //productosvendidos
@@ -257,9 +272,8 @@
                     ganancia += parseFloat(venta.ganancia);
                     ventastotales += parseFloat(venta.venta_total);
                 }
-                const ventasTotalesFormat = ventastotales.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' }).replace('¤', '').replace(',', '.');
-                const gananciaFormat = ganancia.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' }).replace('¤', '').replace(',', '.');
-
+                const ventasTotalesFormat = formatearNumero(ventastotales, true);
+                const gananciaFormat = formatearNumero(ganancia, true);
                 ventasdehoy.innerText = `${ventasTotalesFormat}`;
                 gananciadehoy.innerText = `${gananciaFormat}`;
             })

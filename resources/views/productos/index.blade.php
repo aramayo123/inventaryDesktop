@@ -178,19 +178,19 @@ if (session('success_product')) {
                     <div class="row mb-3">
                         <div class="col">
                             <label class="form-label" for="precio_compra_unitario">Precio de compra por unidad: </label>
-                            <input type="number" step="0.10" class="form-control" name="precio_compra_unitario" id="precio_compra_unitario" value="${producto.precio_compra_unitario}">
+                            <input type="number" step="0.01" class="form-control" name="precio_compra_unitario" id="precio_compra_unitario" value="${producto.precio_compra_unitario}">
                         </div>
                     </div>
                     <div class="row mb-3">
                         <div class="col">
                             <label class="form-label" for="precio_compra_bulto">Precio de compra por bulto: </label>
-                            <input type="number" step="0.10" class="form-control" name="precio_compra_bulto" id="precio_compra_bulto" value="${producto.precio_compra_bulto}">
+                            <input type="number" step="0.01" class="form-control" name="precio_compra_bulto" id="precio_compra_bulto" value="${producto.precio_compra_bulto}">
                         </div>
                     </div>
                     <div class="row mb-3">
                          <div class="col">
                             <label class="form-label" for="precio_venta_unitario">Precio de venta: </label>
-                            <input type="number" step="0.10" class="form-control" name="precio_venta_unitario" id="precio_venta_unitario" value="${producto.precio_venta_unitario}">
+                            <input type="number" step="0.01" class="form-control" name="precio_venta_unitario" id="precio_venta_unitario" value="${producto.precio_venta_unitario}">
                         </div>
                     </div>
                 </form>

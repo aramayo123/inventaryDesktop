@@ -81,7 +81,7 @@
 
                                 <div class="mb-3">
                                     <label for="precio_compra_unitario" class="form-label">Precio de compra por unidad: </label>
-                                    <input type="number" name="precio_compra_unitario"
+                                    <input type="number" step="0.01" name="precio_compra_unitario"
                                         class="form-control @error('precio_compra_unitario') is-invalid @enderror"
                                         value="{{ old('precio_compra_unitario') }}">
                                     @error('precio_compra_unitario')
@@ -93,7 +93,7 @@
 
                                 <div class="mb-3">
                                     <label for="precio_compra_bulto" class="form-label">Precio de compra por bulto: </label>
-                                    <input type="number" name="precio_compra_bulto"
+                                    <input type="number" step="0.01" name="precio_compra_bulto"
                                         class="form-control @error('precio_compra_bulto') is-invalid @enderror"
                                         value="{{ old('precio_compra_bulto') }}">
                                     @error('precio_compra_bulto')
@@ -105,7 +105,7 @@
 
                                 <div class="mb-3">
                                     <label for="precio_venta_unitario" class="form-label">Precio de venta: </label>
-                                    <input type="number" name="precio_venta_unitario"
+                                    <input type="number" step="0.01" name="precio_venta_unitario"
                                         class="form-control @error('precio_venta_unitario') is-invalid @enderror"
                                         value="{{ old('precio_venta_unitario') }}">
                                     @error('precio_venta_unitario')

@@ -34,9 +34,9 @@ class ProductRequest extends FormRequest
             'cantidad_bultos' => 'integer|min:0',
             'bultos_min_aviso' => 'integer|min:0',
             'cantidad_por_bulto' => 'required|integer|min:0',
-            'precio_compra_unitario' => 'required|integer|min:0',
-            'precio_compra_bulto' => 'required|integer|min:0',
-            'precio_venta_unitario' => 'required|integer|min:0',
+            'precio_compra_unitario' => ['required','numeric','regex:/^\d+(\.\d{1,2})?$/','min:0'],
+            'precio_compra_bulto'    => ['required','numeric','regex:/^\d+(\.\d{1,2})?$/','min:0'],
+            'precio_venta_unitario'  => ['required','numeric','regex:/^\d+(\.\d{1,2})?$/','min:0'],
         ];
     }
     public function attributes()
@@ -62,9 +62,15 @@ class ProductRequest extends FormRequest
             'codigo.unique' => 'El codigo ingresado ya existe y pertenece a otro producto.',
             'nombre.required' => 'El nombre del producto es obligatorio.',
             'nombre.string' => 'El nombre del producto no debe contener numeros o caracteres especiales.',
-            'precio_venta_unitario.required' => 'El precio unitario de venta es obligatorio.',
-            'precio_venta_unitario.numeric' => 'El precio unitario de venta debe ser un numero.',
-            'precio_venta_unitario.min' => 'El precio unitario de venta debe ser mayor que 0.',
+            'precio_compra_unitario.required' => 'El precio de compra unitario es obligatorio.',
+            'precio_compra_bulto.required'    => 'El precio de compra por bulto es obligatorio.',
+            'precio_venta_unitario.required'  => 'El precio de venta unitario es obligatorio.',
+            'precio_compra_unitario.numeric' => 'El precio de compra unitario debe ser un número válido.',
+            'precio_compra_bulto.numeric'    => 'El precio de compra por bulto debe ser un número válido.',
+            'precio_venta_unitario.numeric'  => 'El precio de venta unitario debe ser un número válido.',
+            'precio_compra_unitario.regex' => 'El precio de compra unitario debe tener como máximo dos decimales.',
+            'precio_compra_bulto.regex'    => 'El precio de compra por bulto debe tener como máximo dos decimales.',
+            'precio_venta_unitario.regex'  => 'El precio de venta unitario debe tener como máximo dos decimales.',
         ];
     }
 }
