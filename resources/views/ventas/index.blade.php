@@ -147,25 +147,6 @@
         resultsDiv.classList.toggle('d-none', matches.length === 0);
     });
 
-    function formatearNumero(valor) {
-        // Normalizar la entrada: reemplazar coma por punto
-        if (typeof valor === 'string') {
-            valor = valor.replace(',', '.');
-        }
-
-        // Convertir a número
-        let numero = parseFloat(valor);
-
-        // Si no es número válido, devolver cadena vacía
-        if (isNaN(numero)) return '';
-
-        // Formatear solo como número (sin $ ni ARS)
-        return new Intl.NumberFormat('es-AR', {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        }).format(numero);
-    }
-
     function AgregarCarrito(productId) {
         const producto = products.find(p => p.id === productId);
         if (!producto) return;
@@ -178,6 +159,9 @@
 
         const precioVenta = parseFloat(producto.precio_venta_unitario);
         const precioVentaFormateado = formatearNumero(precioVenta);
+        //(precioVentaFormateado)
+        //const inputCantidad = document.getElementById(`cantidad-${producto.id}`);
+        //console.log(inputCantidad)
 
         row.innerHTML = `
       <td>${producto.nombre}</td>
@@ -226,14 +210,21 @@
     function actualizarSubtotal(idProducto) {
         const cantidadInput = document.getElementById(`cantidad-${idProducto}`);
         const precioUnitarioText = document.getElementById(`precio-${idProducto}`).textContent;
-
+        //console.log(precioUnitarioText);
         const cantidad = parseInt(cantidadInput.value) || 0;
-        const precioUnitario = parseFloat(precioUnitarioText.replace(/\./g, '').replace(',', '.')) || 0;
-
+        const precioUnitario = parseFloat(
+            precioUnitarioText
+            .replace('$', '') // saca el signo $
+            .replace(/\s/g, '') // saca espacios raros
+            .replace(/\./g, '') // saca puntos de miles
+            .replace(',', '.') // cambia coma por punto
+        ) || 0;
         const nuevoSubtotal = cantidad * precioUnitario;
+        //console.log(nuevoSubtotal);
 
         const subtotalTd = document.getElementById(`subtotal-${idProducto}`);
         subtotalTd.textContent = formatearNumero(nuevoSubtotal);
+        //console.log(formatearNumero(nuevoSubtotal))
 
         actualizarTotales();
         subtotalTd.classList.add('bg-warning', 'text-dark');
@@ -243,7 +234,13 @@
     function actualizarPrecioTotal() {
         let total = 0;
         document.querySelectorAll('[id^="subtotal-"]').forEach(subtotalTd => {
-            const subtotal = parseFloat(subtotalTd.innerText.replace('$', '').replace(',', '')) || 0;
+            const subtotal = parseFloat(
+                subtotalTd.innerText
+                .replace('$', '') // saca el signo $
+                .replace(/\s/g, '') // saca espacios raros
+                .replace(/\./g, '') // saca puntos de miles
+                .replace(',', '.') // cambia coma por punto
+            ) || 0;
             total += subtotal;
         });
 
@@ -305,7 +302,13 @@
         document.querySelectorAll('#tablaProductos tr').forEach(tr => {
             const cantidadInput = tr.querySelector('.cantidad');
             const precioUnitarioText = tr.children[2].textContent;
-            const precioUnitario = parseFloat(precioUnitarioText.replace(/\./g, '').replace(',', '.')) || 0;
+            const precioUnitario = parseFloat(
+                precioUnitarioText
+                .replace('$', '') // saca el signo $
+                .replace(/\s/g, '') // saca espacios raros
+                .replace(/\./g, '') // saca puntos de miles
+                .replace(',', '.') // cambia coma por punto
+            ) || 0;
 
             const cantidad = parseInt(cantidadInput?.value || 0);
             const subtotalCell = tr.querySelector('.subtotal');

@@ -67,23 +67,6 @@
 
 
 <script>
-    function formatearNumero(valor, conSimbolo = true) {
-        if (isNaN(valor)) return '0,00';
-
-        if (conSimbolo) {
-            return new Intl.NumberFormat('es-AR', {
-                style: 'currency',
-                currency: 'ARS',
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2
-            }).format(valor);
-        } else {
-            return new Intl.NumberFormat('es-AR', {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2
-            }).format(valor);
-        }
-    }
     const facturas = @json($facturas);
 
     const tablaVentas = document.getElementById('tablaVentas');
